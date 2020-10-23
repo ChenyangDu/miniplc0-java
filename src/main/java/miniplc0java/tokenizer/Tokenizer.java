@@ -50,10 +50,10 @@ public class Tokenizer {
         // Token 的 Value 应填写数字的值
         String value = "";
         Pos startPos = it.currentPos();
-        char peek = it.nextChar();
+        char peek = it.peekChar();
         while(Character.isDigit(peek)){
-            value += peek;
-            peek = it.nextChar();
+            value += it.nextChar();
+            peek = it.peekChar();
         }
         return new Token(TokenType.Uint,Integer.parseInt(value),startPos,it.currentPos());
 //        throw new Error("Not implemented");
@@ -71,13 +71,23 @@ public class Tokenizer {
         // Token 的 Value 应填写标识符或关键字的字符串
         String value = "";
         Pos startPos = it.currentPos();
-        char peek = it.nextChar();
+        char peek = it.peekChar();
         while (Character.isDigit(peek) || Character.isAlphabetic(peek)){
-            value += peek;
-            peek = it.nextChar();
+            value += it.nextChar();
+            peek = it.peekChar();
         }
-        return new Token(TokenType.Ident,value,startPos,it.currentPos());
-//        throw new Error("Not implemented");
+        return new Token(lexIdentOrKeyword(value),value,startPos,it.currentPos());
+    }
+
+    private TokenType lexIdentOrKeyword(String value){
+        switch (value){
+            case "begin":return TokenType.Begin;
+            case "end":return TokenType.End;
+            case "var":return TokenType.Var;
+            case "const":return TokenType.Const;
+            case "print":return TokenType.Print;
+            default:return TokenType.Ident;
+        }
     }
 
     private Token lexOperatorOrUnknown() throws TokenizeError {
@@ -86,18 +96,25 @@ public class Tokenizer {
                 return new Token(TokenType.Plus, '+', it.previousPos(), it.currentPos());
 
             case '-':
-                // 填入返回语句
-                throw new Error("Not implemented");
+                return new Token(TokenType.Minus, '-', it.previousPos(), it.currentPos());
 
             case '*':
-                // 填入返回语句
-                throw new Error("Not implemented");
+                return new Token(TokenType.Mult, '*', it.previousPos(), it.currentPos());
 
             case '/':
-                // 填入返回语句
-                throw new Error("Not implemented");
+                return new Token(TokenType.Div, '/', it.previousPos(), it.currentPos());
 
-            // 填入更多状态和返回语句
+            case '=':
+                return new Token(TokenType.Equal, '=', it.previousPos(), it.currentPos());
+
+            case ';':
+                return new Token(TokenType.Semicolon, ';', it.previousPos(), it.currentPos());
+
+            case '(':
+                return new Token(TokenType.LParen, '(', it.previousPos(), it.currentPos());
+
+            case ')':
+                return new Token(TokenType.RParen, ')', it.previousPos(), it.currentPos());
 
             default:
                 // 不认识这个输入，摸了

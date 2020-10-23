@@ -2,6 +2,7 @@ package miniplc0java.tokenizer;
 
 import miniplc0java.error.TokenizeError;
 import miniplc0java.error.ErrorCode;
+import miniplc0java.util.Pos;
 
 public class Tokenizer {
 
@@ -47,7 +48,15 @@ public class Tokenizer {
         // 解析成功则返回无符号整数类型的token，否则返回编译错误
         //
         // Token 的 Value 应填写数字的值
-        throw new Error("Not implemented");
+        String value = "";
+        Pos startPos = it.currentPos();
+        char peek = it.nextChar();
+        while(Character.isDigit(peek)){
+            value += peek;
+            peek = it.nextChar();
+        }
+        return new Token(TokenType.Uint,Integer.parseInt(value),startPos,it.currentPos());
+//        throw new Error("Not implemented");
     }
 
     private Token lexIdentOrKeyword() throws TokenizeError {
@@ -60,7 +69,15 @@ public class Tokenizer {
         // -- 否则，返回标识符
         //
         // Token 的 Value 应填写标识符或关键字的字符串
-        throw new Error("Not implemented");
+        String value = "";
+        Pos startPos = it.currentPos();
+        char peek = it.nextChar();
+        while (Character.isDigit(peek) || Character.isAlphabetic(peek)){
+            value += peek;
+            peek = it.nextChar();
+        }
+        return new Token(TokenType.Ident,value,startPos,it.currentPos());
+//        throw new Error("Not implemented");
     }
 
     private Token lexOperatorOrUnknown() throws TokenizeError {

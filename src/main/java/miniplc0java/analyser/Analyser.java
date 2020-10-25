@@ -201,14 +201,22 @@ public final class Analyser {
         expect(TokenType.End);
         expect(TokenType.EOF);
     }
-
+    /**
+     * <主过程> ::= <常量声明><变量声明><语句序列>
+     */
     private void analyseMain() throws CompileError {
-        throw new Error("Not implemented");
+        analyseConstantDeclaration();
+        analyseVariableDeclaration();
+        analyseStatementSequence();
     }
 
+    /**
+     * <常量声明> ::= {<常量声明语句>}
+     */
     private void analyseConstantDeclaration() throws CompileError {
         // 示例函数，示例如何解析常量声明
         // 如果下一个 token 是 const 就继续
+        // <常量声明语句> ::= 'const'<标识符>'='<常表达式>';'
         while (nextIf(TokenType.Const) != null) {
             // 变量名
             var nameToken = expect(TokenType.Ident);
@@ -224,30 +232,44 @@ public final class Analyser {
         }
     }
 
+    /**
+     * <变量声明> ::= {<变量声明语句>}
+     */
     private void analyseVariableDeclaration() throws CompileError {
         throw new Error("Not implemented");
     }
 
+    /**
+     * <语句序列> ::= {<语句>}
+     */
     private void analyseStatementSequence() throws CompileError {
         throw new Error("Not implemented");
     }
 
+    /**
+     * <语句> ::= <赋值语句>|<输出语句>|<空语句>
+     */
     private void analyseStatement() throws CompileError {
         throw new Error("Not implemented");
     }
 
+    /**
+     * <常表达式> ::= [<符号>]<无符号整数>
+     */
     private void analyseConstantExpression() throws CompileError {
         throw new Error("Not implemented");
     }
 
-    private void analyseExpression() throws CompileError {
-        throw new Error("Not implemented");
-    }
-
+    /**
+     * <赋值语句> ::= <标识符>'='<表达式>';'
+     */
     private void analyseAssignmentStatement() throws CompileError {
         throw new Error("Not implemented");
     }
 
+    /**
+     * <输出语句> ::= 'print' '(' <表达式> ')' ';'
+     */
     private void analyseOutputStatement() throws CompileError {
         expect(TokenType.Print);
         expect(TokenType.LParen);
@@ -257,10 +279,23 @@ public final class Analyser {
         instructions.add(new Instruction(Operation.WRT));
     }
 
+    /**
+     * <表达式> ::= <项>{<加法型运算符><项>}
+     */
+    private void analyseExpression() throws CompileError {
+        throw new Error("Not implemented");
+    }
+
+    /**
+     * <项> ::= <因子>{<乘法型运算符><因子>}
+     */
     private void analyseItem() throws CompileError {
         throw new Error("Not implemented");
     }
 
+    /**
+     * <因子> ::= [<符号>]( <标识符> | <无符号整数> | '('<表达式>')' )
+     */
     private void analyseFactor() throws CompileError {
         boolean negate;
         if (nextIf(TokenType.Minus) != null) {

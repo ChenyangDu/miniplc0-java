@@ -51,7 +51,6 @@ public class Tokenizer {
             value += it.nextChar();
             peek = it.peekChar();
             if(!Character.isDigit(peek)){
-                // todo err
                 throw new TokenizeError(ErrorCode.ExpectedToken,it.currentPos());
             }
             while(Character.isDigit(peek)){
@@ -128,7 +127,6 @@ public class Tokenizer {
                     it.nextChar();
                     return new Token(TokenType.NEQ, "!=", it.previousPos(), it.currentPos());
                 }else{
-                    // todo some err
                     throw new TokenizeError(ErrorCode.InvalidInput, it.previousPos());
                 }
             case '<':
@@ -168,13 +166,11 @@ public class Tokenizer {
             case ';':
                 it.nextChar();
                 return new Token(TokenType.SEMICOLON, ";", it.previousPos(), it.currentPos());
-                //todo
             case '\'':
                 return lexChar();
             case '"':
                 return lexString();
             default:
-                // todo 不认识这个输入，摸了
                 throw new TokenizeError(ErrorCode.InvalidInput, it.previousPos());
         }
     }

@@ -105,7 +105,8 @@ public class App {
                 return;
             }
             for (Instruction instruction : instructions) {
-                output.println(instruction.toString());
+                //output.println(instruction.toString());
+                output.format("%-20s %s\n",instruction.toByteString() , instruction.toString());
             }
         } else {
             System.err.println("Please specify either '--analyse' or '--tokenize'.");

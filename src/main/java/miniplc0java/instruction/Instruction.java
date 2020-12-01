@@ -1,5 +1,7 @@
 package miniplc0java.instruction;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class Instruction {
@@ -17,7 +19,7 @@ public class Instruction {
     }
 
     public Instruction() {
-        this.opt = Operation.LIT;
+        //this.opt = Operation.LIT;
         this.x = 0;
     }
 
@@ -54,20 +56,70 @@ public class Instruction {
 
     @Override
     public String toString() {
-        switch (this.opt) {
-            case ADD:
-            case DIV:
-            case ILL:
-            case MUL:
-            case SUB:
-            case WRT:
-                return String.format("%s", this.opt);
-            case LIT:
-            case LOD:
-            case STO:
-                return String.format("%s %s", this.opt, this.x);
-            default:
-                return "ILL";
+        if(haveParam()){
+            return this.opt.toString() + " " + x;
         }
+        return this.opt.toString();
+    }
+
+    public String toByteString(){
+        String res = "";
+        res += String.format("%02x",getOptByte());
+
+        if(haveParam()){
+            if(opt == Operation.PUSH){
+                res += String.format("%016x",x);
+            }else{
+                res += String.format("%08x",x);
+            }
+        }
+        return  res;
+    }
+
+    private boolean haveParam(){
+        int opyByte = getOptByte();
+        boolean haParam = false;
+        switch (this.opt){
+            case PUSH:
+            case POPN:
+            case LOCA:
+            case ARGA:
+            case GLOBA:
+            case STACK_ALLOC:
+            case BR:
+            case BR_FALSE:
+            case BR_TRUE:
+            case CALL:
+                haParam = true;
+        }
+        return haParam;
+    }
+    private int getOptByte(){
+        int offset = 0;
+        if(this.opt.ordinal() >= Operation.LOCA.ordinal()){
+            offset = 5;
+        }
+        if(this.opt.ordinal() >= Operation.LOAD8.ordinal()){
+            offset = 0x10-8;
+        }
+        if(this.opt.ordinal() >= Operation.ADD_I.ordinal()){
+            offset = 0x20-18;
+        }
+        if(this.opt.ordinal() >= Operation.BR.ordinal()){
+            offset = 0x41-43;
+        }
+        if(this.opt.ordinal() >= Operation.CALL.ordinal()){
+            offset = 0x48 - Operation.CALL.ordinal();
+        }
+        if(this.opt.ordinal() >= Operation.SCAN_I.ordinal()){
+            offset = 0x50 - Operation.SCAN_I.ordinal();
+        }
+        if(this.opt.ordinal() >= Operation.PRINT_I.ordinal()){
+            offset = 0x50 - Operation.PRINT_I.ordinal();
+        }
+        if(this.opt.ordinal() >= Operation.PANIC.ordinal()){
+            offset = 0x50 - Operation.PANIC.ordinal();
+        }
+        return this.opt.ordinal() + offset;
     }
 }

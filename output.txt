@@ -1,0 +1,11 @@
+0c00000001           GLOBA 1
+13                   LOAD64
+010000000000000000   PUSH 0
+2f                   CMP_I
+38                   SET_GT
+4200000005           BR_FALSE 5
+0a00000002           LOCA 2
+0c00000001           GLOBA 1
+13                   LOAD64
+16                   STORE64
+410000000b           BR 11

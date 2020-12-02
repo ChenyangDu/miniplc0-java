@@ -1,26 +1,26 @@
 package miniplc0java.instruction;
 
-import java.util.ArrayList;
-import java.util.List;
+import miniplc0java.util.MyByte;
+
 import java.util.Objects;
 
 public class Instruction {
     private Operation opt;
-    Integer x;
+    Long x;
 
     public Instruction(Operation opt) {
         this.opt = opt;
-        this.x = 0;
+        this.x = 0L;
     }
 
-    public Instruction(Operation opt, Integer x) {
+    public Instruction(Operation opt, Long x) {
         this.opt = opt;
         this.x = x;
     }
 
     public Instruction() {
         //this.opt = Operation.LIT;
-        this.x = 0;
+        this.x = 0L;
     }
 
     @Override
@@ -46,12 +46,15 @@ public class Instruction {
         this.opt = opt;
     }
 
-    public Integer getX() {
+    public Long getX() {
         return x;
     }
 
-    public void setX(Integer x) {
+    public void setX(Long x) {
         this.x = x;
+    }
+    public void setX(int x) {
+        this.x = (long)x;
     }
 
     @Override
@@ -60,6 +63,19 @@ public class Instruction {
             return this.opt.toString() + " " + x;
         }
         return this.opt.toString();
+    }
+
+    public byte[] toBytes(){
+        byte[] res = new byte[1];
+        res[0] = getOptByte();
+        if(haveParam()){
+            if(opt == Operation.PUSH){
+                res = MyByte.merge(res,MyByte.toBytes(x,8));
+            }else{
+                res = MyByte.merge(res,MyByte.toBytes(x,4));
+            }
+        }
+        return res;
     }
 
     public String toByteString(){
@@ -94,8 +110,8 @@ public class Instruction {
         }
         return haParam;
     }
-    private int getOptByte(){
-        int offset = 0;
+    private byte getOptByte(){
+        byte offset = 0;
         if(this.opt.ordinal() >= Operation.LOCA.ordinal()){
             offset = 5;
         }
@@ -109,17 +125,17 @@ public class Instruction {
             offset = 0x41-43;
         }
         if(this.opt.ordinal() >= Operation.CALL.ordinal()){
-            offset = 0x48 - Operation.CALL.ordinal();
+            offset = (byte)(0x48 - Operation.CALL.ordinal());
         }
         if(this.opt.ordinal() >= Operation.SCAN_I.ordinal()){
-            offset = 0x50 - Operation.SCAN_I.ordinal();
+            offset = (byte)(0x50 - Operation.SCAN_I.ordinal());
         }
         if(this.opt.ordinal() >= Operation.PRINT_I.ordinal()){
-            offset = 0x50 - Operation.PRINT_I.ordinal();
+            offset = (byte)(0x50 - Operation.PRINT_I.ordinal());
         }
         if(this.opt.ordinal() >= Operation.PANIC.ordinal()){
-            offset = 0x50 - Operation.PANIC.ordinal();
+            offset = (byte)(0x50 - Operation.PANIC.ordinal());
         }
-        return this.opt.ordinal() + offset;
+        return (byte)(this.opt.ordinal() + offset);
     }
 }

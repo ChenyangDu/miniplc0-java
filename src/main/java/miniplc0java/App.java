@@ -104,9 +104,11 @@ public class App {
                 System.exit(0);
                 return;
             }
+            output.writeBytes(analyzer.program.toBytes());/*
             for (Instruction instruction : instructions) {
                 //output.println(instruction.toString());
                 //output.format("%-20s %s\n",instruction.toByteString() , instruction.toString());
+
                 List<Byte> bytes = new ArrayList<Byte>();
                 bytes.add((byte) 20);
                 byte[] bytes1 = {1,2,3};
@@ -115,7 +117,7 @@ public class App {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            }
+            }*/
         } else {
             System.err.println("Please specify either '--analyse' or '--tokenize'.");
             System.exit(3);

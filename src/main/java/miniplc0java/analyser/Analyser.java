@@ -29,7 +29,7 @@ public final class Analyser {
     Symboler symboler = new Symboler();
 
     /** 程序 */
-    Program program = new Program();
+    public Program program = new Program();
 
     /** 算符优先文法的栈 */
     List<TokenType> opStack = new ArrayList<>();
@@ -46,13 +46,14 @@ public final class Analyser {
         analyseProgram();
         System.out.println(symboler);
         for(SymbolEntry symbol:symboler.symbolTable){
-            if(symbol.isGlobal){
+            if(symbol.isGlobal && symbol.type != SymbolType.FUN_NAME){
                 program.addGlobal(new Globaldef(symbol.isConstant,"00000000"));
             }
         }
 
         System.out.println(program);
         System.out.println(program.toByteString());
+        System.out.println(Arrays.toString(program.toBytes()));
         return instructions;
     }
 
@@ -130,6 +131,9 @@ public final class Analyser {
     }
 
     private void analyseProgram() throws CompileError {
+        // 先给_start占个坑
+        symboler.addSymbol("_start",SymbolType.FUN_NAME,
+                false,false,0,true,false,null);
         while (!check(TokenType.EOF)){
             if(check(TokenType.LET_KW)){
                 analyseDeclLetStmt(0);
@@ -141,8 +145,35 @@ public final class Analyser {
                 break;
             }
         }
-
+        addStartFun();
         expect(TokenType.EOF);
+    }
+
+    private void addStartFun() throws AnalyzeError {
+        Functiondef functiondef = new Functiondef();
+        functiondef.name = "_start";
+        functiondef.id = 0;
+        functiondef.returnSize = 0;
+        functiondef.params = new ArrayList<>();
+        functiondef.localSize = 0;
+        int length = 0;
+        for(int i=0;i<instructions.size();i++){
+            functiondef.instructions.add(instructions.get(i));
+            length += instructions.get(i).toByteString().length()/2;
+        }
+        functiondef.bodySize = instructions.size(); //(length+7)/8;
+        while(instructions.size() > 0){
+            instructions.remove(0);
+        }
+        program.functiondefList.add(0,functiondef);
+        SymbolEntry symbolEntry = symboler.findSymbol(functiondef.name);
+
+        Functiondef mainFun = program.find("main");
+        if(mainFun == null){
+            throw new AnalyzeError(ErrorCode.NoMain,null);
+        }
+        newIns(Operation.CALL,mainFun.id);
+
     }
 
     private void analyseDeclLetStmt(int level) throws CompileError{
@@ -226,20 +257,21 @@ public final class Analyser {
             funEntry.instructions.add(instructions.get(i));
             length += instructions.get(i).toByteString().length()/2;
         }
+        funEntry.bodySize = instructions.size() - oriSize; //(length+7)/8;
         while(instructions.size() > oriSize){
             instructions.remove(oriSize);
         }
-        funEntry.bodySize = (length+7)/8;
 
         // 获取函数中需要的局部变量数量
         funEntry.localSize = symboler.symbolTable.size() - oriSymSize;
 
         //todo 建立函数的符号表
-        program.addFunc(funEntry);
 
         symboler.popAllLevel();
-        symboler.addSymbol(funEntry.name,SymbolType.FUN_NAME,
+        SymbolEntry symbol = symboler.addSymbol(funEntry.name,SymbolType.FUN_NAME,
                 false,false,0,true,false,startPos);
+        funEntry.id = symbol.stackOffset;
+        program.addFunc(funEntry);
     }
 
     /*
@@ -448,12 +480,38 @@ public final class Analyser {
 
     private void pushUint(Token token) throws CompileError {
         expect(TokenType.UINT_LITERAL);
-        newIns(Operation.PUSH,Integer.parseInt((String)token.getValue()));
+        newIns(Operation.PUSH,Long.parseLong((String)token.getValue()));
     }
     private void pushDouble(Token token) throws TokenizeError {
         next();
         //todo
         System.out.println("push "+token.getValue());
+    }
+    private void pushFun(Token token) throws CompileError{
+        expect(TokenType.IDENT);
+        String name = (String)token.getValue();
+        Functiondef function = program.find(name);
+        if(function == null){
+            throw new AnalyzeError(ErrorCode.NotDeclared,token.getStartPos());
+        }
+
+        // 申请返回空间
+        for(int i=0;i<function.returnSize;i++){
+            newIns(Operation.PUSH,0);
+        }
+
+        // 传递参数
+        expect(TokenType.L_PAREN);
+        for(int i=0;i<function.params.size();i++){
+            if(i != 0){
+                expect(TokenType.COMMA);
+            }
+            analyseExpr();
+        }
+        // call
+        newIns(Operation.CALL,function.id);
+
+        expect(TokenType.R_PAREN);
     }
     private void pushIdent(Token token) throws CompileError {
         SymbolEntry symbol = symboler.findSymbol((String) token.getValue());
@@ -461,7 +519,7 @@ public final class Analyser {
             throw new AnalyzeError(ErrorCode.NotDeclared,token.getStartPos());
         }
         if(symbol.type == SymbolType.FUN_NAME){
-
+            pushFun(token);
         }else{
             expect(TokenType.IDENT);
             if(nextIf(TokenType.ASSIGN) != null) {
@@ -511,7 +569,10 @@ public final class Analyser {
     }
     
     private void newIns(Operation opt, Integer x){
-        instructions.add(new Instruction(opt,x));
+        instructions.add(new Instruction(opt,(long)x));
+    }
+    private void newIns(Operation opt, Long x){
+        instructions.add(new Instruction(opt,(long)x));
     }
     private void newIns(Operation opt){
         instructions.add(new Instruction(opt));

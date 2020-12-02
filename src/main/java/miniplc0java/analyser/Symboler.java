@@ -11,7 +11,7 @@ public class Symboler {
     /** 符号表 */
     List<SymbolEntry> symbolTable = new ArrayList<>();
 
-    public void addSymbol(String name, SymbolType type,
+    public SymbolEntry addSymbol(String name, SymbolType type,
                           boolean isConstant, boolean isInitialized,
                           int level,
                           boolean isGlobal,boolean isParam,
@@ -24,6 +24,7 @@ public class Symboler {
                 name,type,isConstant,isInitialized,level,isGlobal,isParam,0);
         symbol.stackOffset = getOffset(symbol);
         symbolTable.add(symbol);
+        return symbol;
     }
     public void addSymbol(SymbolEntry symbolEntry){
         symbolTable.add(symbolEntry);

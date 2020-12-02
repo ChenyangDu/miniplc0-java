@@ -2,10 +2,12 @@ let k:double;
 let i: int=k;
 
 fn fooo(L: int,k:int) -> int {
-    let j:int;
-    let o:int;
-    let d:double;
-    const c:int=o;
-    return d;
+    return k;
 }
+
+fn main()->void{
+    let a:int=1;
+    fooo(a,0);
+}
+
 let a:int=i;

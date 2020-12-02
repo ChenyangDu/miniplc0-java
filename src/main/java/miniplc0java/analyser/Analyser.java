@@ -218,6 +218,8 @@ public final class Analyser {
         funEntry.name = (String)expect(TokenType.IDENT).getValue();
         expect(TokenType.L_PAREN);
 
+        int beforeParamSize = symboler.symbolTable.size();
+
         // 获取函数参数列表
         while (!check(TokenType.R_PAREN)){
             boolean isConst = false;
@@ -245,6 +247,14 @@ public final class Analyser {
         }else{
             funEntry.returnSize = 0;
         }
+        // todo 如果函数有返回值，需要把所有参数+1
+
+        if(funEntry.returnSize == 1){
+            for(int i=beforeParamSize;i<symboler.symbolTable.size();i++){
+                symboler.symbolTable.get(i).stackOffset++;
+            }
+        }
+
         //todo 获取函数的总长度
         int oriSize = instructions.size();
         int oriSymSize = symboler.symbolTable.size();

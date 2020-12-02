@@ -93,6 +93,10 @@ public class App {
                 output.println(token.toString());
             }
         } else if (result.getBoolean("analyse")) {
+            while (scanner.hasNextLine()){
+                String str = scanner.nextLine();
+                output.println(str);
+            }
             // analyze
             var analyzer = new Analyser(tokenizer);
             List<Instruction> instructions;

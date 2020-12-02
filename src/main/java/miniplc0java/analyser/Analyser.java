@@ -475,6 +475,8 @@ public final class Analyser {
             pushDouble(token);
         }else if(token.getTokenType() == TokenType.IDENT){
             pushIdent(token);
+        }else if(token.getTokenType() == TokenType.STRING_LITERAL){
+
         }
     }
 

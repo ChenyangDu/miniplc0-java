@@ -30,13 +30,16 @@ public class Tokenizer {
         }
 
         char peek = it.peekChar();
+        Token res = null;
         if (Character.isDigit(peek)) {
-            return lexNum();
+            res = lexNum();
         } else if (Character.isAlphabetic(peek)) {
-            return lexIdentOrKeyword();
+            res = lexIdentOrKeyword();
         } else {
-            return lexOperatorOrUnknown();
+            res = lexOperatorOrUnknown();
         }
+        System.out.println(res);
+        return res;
     }
 
     private Token lexNum() throws TokenizeError{

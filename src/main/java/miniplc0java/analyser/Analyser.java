@@ -490,10 +490,13 @@ public final class Analyser {
         System.out.println("push "+token.getValue());
     }
     private void pushFun(Token token) throws CompileError{
-        expect(TokenType.IDENT);
         String name = (String)token.getValue();
         Functiondef function = program.find(name);
         if(function == null){
+            System.out.println("Err");
+            if(isStd(name)){
+                pushStd(name);
+            }
             throw new AnalyzeError(ErrorCode.NotDeclared,token.getStartPos());
         }
 
@@ -502,6 +505,7 @@ public final class Analyser {
             newIns(Operation.PUSH,0);
         }
 
+        expect(TokenType.IDENT);
         // 传递参数
         expect(TokenType.L_PAREN);
         for(int i=0;i<function.params.size();i++){
@@ -516,9 +520,15 @@ public final class Analyser {
         expect(TokenType.R_PAREN);
     }
     private void pushIdent(Token token) throws CompileError {
-        SymbolEntry symbol = symboler.findSymbol((String) token.getValue());
+        String name = (String) token.getValue();
+        SymbolEntry symbol = symboler.findSymbol(name);
         if(symbol == null){
-            throw new AnalyzeError(ErrorCode.NotDeclared,token.getStartPos());
+            if(isStd(name)){
+                pushStd(name);
+                return;
+            }else {
+                throw new AnalyzeError(ErrorCode.NotDeclared, token.getStartPos());
+            }
         }
         if(symbol.type == SymbolType.FUN_NAME){
             pushFun(token);
@@ -568,6 +578,29 @@ public final class Analyser {
             return SymbolType.VOID_NAME;
         }
         throw new AnalyzeError(ErrorCode.InvalidInput,token.getStartPos());
+    }
+
+    private boolean isStd(String name){
+        String[] stds = new String[]{"getint","getdouble","getchar",
+                "putint","putdouble","putchar","putstr","putln"};
+        for(String std:stds){
+            if(name.equals(std))
+                return true;
+        }
+        return false;
+    }
+    private void pushStd(String name) throws CompileError {
+        expect(TokenType.IDENT);
+        if(name.equals("getint")){
+            expect(TokenType.L_PAREN);
+            expect(TokenType.R_PAREN);
+            newIns(Operation.SCAN_I);
+        }else if(name.equals("putint")){
+            expect(TokenType.L_PAREN);
+            analyseExpr();
+            expect(TokenType.R_PAREN);
+            newIns(Operation.PRINT_I);
+        }
     }
     
     private void newIns(Operation opt, Integer x){

@@ -93,23 +93,23 @@ public class App {
                 output.println(token.toString());
             }
         } else if (result.getBoolean("analyse")) {
-            while (scanner.hasNextLine()){
-                String str = scanner.nextLine();
-                System.out.println(str);
-            }
-            System.out.println("!@#!#!#!");
-            // analyze
-//            var analyzer = new Analyser(tokenizer);
-//            List<Instruction> instructions;
-//            try {
-//                instructions = analyzer.analyse();
-//            } catch (Exception e) {
-//                // 遇到错误不输出，直接退出
-//                System.err.println(e);
-//                System.exit(0);
-//                return;
+//            while (scanner.hasNextLine()){
+//                String str = scanner.nextLine();
+//                System.out.println(str);
 //            }
-//            output.writeBytes(analyzer.program.toBytes());/*
+//            System.out.println("!@#!#!#!");
+            // analyze
+            var analyzer = new Analyser(tokenizer);
+            List<Instruction> instructions;
+            try {
+                instructions = analyzer.analyse();
+            } catch (Exception e) {
+                // 遇到错误不输出，直接退出
+                System.err.println(e);
+                System.exit(0);
+                return;
+            }
+            output.writeBytes(analyzer.program.toBytes());/*
 //            for (Instruction instruction : instructions) {
 //                //output.println(instruction.toString());
 //                //output.format("%-20s %s\n",instruction.toByteString() , instruction.toString());

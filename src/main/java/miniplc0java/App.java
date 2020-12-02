@@ -98,30 +98,30 @@ public class App {
                 output.println(str);
             }
             // analyze
-            var analyzer = new Analyser(tokenizer);
-            List<Instruction> instructions;
-            try {
-                instructions = analyzer.analyse();
-            } catch (Exception e) {
-                // 遇到错误不输出，直接退出
-                System.err.println(e);
-                System.exit(0);
-                return;
-            }
-            output.writeBytes(analyzer.program.toBytes());/*
-            for (Instruction instruction : instructions) {
-                //output.println(instruction.toString());
-                //output.format("%-20s %s\n",instruction.toByteString() , instruction.toString());
-
-                List<Byte> bytes = new ArrayList<Byte>();
-                bytes.add((byte) 20);
-                byte[] bytes1 = {1,2,3};
-                try{
-                    output.writeBytes(bytes1);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }*/
+//            var analyzer = new Analyser(tokenizer);
+//            List<Instruction> instructions;
+//            try {
+//                instructions = analyzer.analyse();
+//            } catch (Exception e) {
+//                // 遇到错误不输出，直接退出
+//                System.err.println(e);
+//                System.exit(0);
+//                return;
+//            }
+//            output.writeBytes(analyzer.program.toBytes());/*
+//            for (Instruction instruction : instructions) {
+//                //output.println(instruction.toString());
+//                //output.format("%-20s %s\n",instruction.toByteString() , instruction.toString());
+//
+//                List<Byte> bytes = new ArrayList<Byte>();
+//                bytes.add((byte) 20);
+//                byte[] bytes1 = {1,2,3};
+//                try{
+//                    output.writeBytes(bytes1);
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//            }*/
         } else {
             System.err.println("Please specify either '--analyse' or '--tokenize'.");
             System.exit(3);

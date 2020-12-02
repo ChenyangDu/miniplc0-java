@@ -1,12 +1,11 @@
 let k:double;
-let i: int;
+let i: int=k;
 
-fn foo(L: int,k:int) -> int {
+fn fooo(L: int,k:int) -> int {
     let j:int;
     let o:int;
     let d:double;
-    while i>0 {
-        d=i;
-    }
-    let c:int;
+    const c:int=o;
+    return d;
 }
+let a:int=i;

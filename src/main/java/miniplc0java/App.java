@@ -106,7 +106,15 @@ public class App {
             }
             for (Instruction instruction : instructions) {
                 //output.println(instruction.toString());
-                output.format("%-20s %s\n",instruction.toByteString() , instruction.toString());
+                //output.format("%-20s %s\n",instruction.toByteString() , instruction.toString());
+                List<Byte> bytes = new ArrayList<Byte>();
+                bytes.add((byte) 20);
+                byte[] bytes1 = {1,2,3};
+                try{
+                    output.writeBytes(bytes1);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         } else {
             System.err.println("Please specify either '--analyse' or '--tokenize'.");

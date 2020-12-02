@@ -7,6 +7,9 @@ import miniplc0java.error.ExpectedTokenError;
 import miniplc0java.error.TokenizeError;
 import miniplc0java.instruction.Instruction;
 import miniplc0java.instruction.Operation;
+import miniplc0java.program.Functiondef;
+import miniplc0java.program.Globaldef;
+import miniplc0java.program.Program;
 import miniplc0java.tokenizer.Token;
 import miniplc0java.tokenizer.TokenType;
 import miniplc0java.tokenizer.Tokenizer;
@@ -25,8 +28,8 @@ public final class Analyser {
     /** 符号表 */
     Symboler symboler = new Symboler();
 
-    /** 函数列表 */
-    List<FunEntry> funEntryList = new ArrayList<>();
+    /** 程序 */
+    Program program = new Program();
 
     /** 算符优先文法的栈 */
     List<TokenType> opStack = new ArrayList<>();
@@ -41,6 +44,15 @@ public final class Analyser {
 
     public List<Instruction> analyse() throws CompileError {
         analyseProgram();
+        System.out.println(symboler);
+        for(SymbolEntry symbol:symboler.symbolTable){
+            if(symbol.isGlobal){
+                program.addGlobal(new Globaldef(symbol.isConstant,"00000000"));
+            }
+        }
+
+        System.out.println(program);
+        System.out.println(program.toByteString());
         return instructions;
     }
 
@@ -129,7 +141,6 @@ public final class Analyser {
                 break;
             }
         }
-        System.out.println(symboler);
 
         expect(TokenType.EOF);
     }
@@ -140,7 +151,7 @@ public final class Analyser {
         String name = (String)ident.getValue();
         expect(TokenType.COLON);
         Token type = expect(TokenType.IDENT);
-        // todo 符号表相关
+        // 符号表相关
         symboler.addSymbol(name,tokenToSymbolType(type),false,false,level,
                 level==0,false,ident.getStartPos());
         if(nextIf(TokenType.ASSIGN) != null){
@@ -154,11 +165,15 @@ public final class Analyser {
     private void analyseDeclConstStmt(int level) throws CompileError{
         expect(TokenType.CONST_KW);
         Token ident = expect(TokenType.IDENT);
+        String name = (String)ident.getValue();
         expect(TokenType.COLON);
         Token type = expect(TokenType.IDENT);
+        symboler.addSymbol(name,tokenToSymbolType(type),false,false,level,
+                level==0,false,ident.getStartPos());
         expect(TokenType.ASSIGN);
+        pushVar(ident,false);
         analyseExpr();
-        // todo 符号表
+        newIns(Operation.STORE64);
         expect(TokenType.SEMICOLON);
     }
 
@@ -168,7 +183,7 @@ public final class Analyser {
         startPos = expect(TokenType.FN_KW).getStartPos();
 
         // 获取函数名字
-        FunEntry funEntry = new FunEntry();
+        Functiondef funEntry = new Functiondef();
         funEntry.name = (String)expect(TokenType.IDENT).getValue();
         expect(TokenType.L_PAREN);
 
@@ -201,7 +216,7 @@ public final class Analyser {
         }
         //todo 获取函数的总长度
         int oriSize = instructions.size();
-
+        int oriSymSize = symboler.symbolTable.size();
         // 分析函数主体
         analyseBlockStmt(0);
 
@@ -211,9 +226,16 @@ public final class Analyser {
             funEntry.instructions.add(instructions.get(i));
             length += instructions.get(i).toByteString().length()/2;
         }
+        while(instructions.size() > oriSize){
+            instructions.remove(oriSize);
+        }
         funEntry.bodySize = (length+7)/8;
+
+        // 获取函数中需要的局部变量数量
+        funEntry.localSize = symboler.symbolTable.size() - oriSymSize;
+
         //todo 建立函数的符号表
-        funEntryList.add(funEntry);
+        program.addFunc(funEntry);
 
         symboler.popAllLevel();
         symboler.addSymbol(funEntry.name,SymbolType.FUN_NAME,
@@ -292,16 +314,19 @@ public final class Analyser {
         int br_pos = instructions.size();
         newIns(Operation.BR_FALSE);
         analyseBlockStmt(level);
-        newIns(Operation.BR,-(start - instructions.size() - 1));
+        newIns(Operation.BR,(start - instructions.size() - 1));
         instructions.get(br_pos).setX(instructions.size() - br_pos-1);
     }
 
     private void analyseReturn() throws CompileError{
         expect(TokenType.RETURN_KW);
-        if(nextIf(TokenType.SEMICOLON) != null){
+        if(nextIf(TokenType.SEMICOLON) == null){
+            System.out.println("return "+peek());
+            newIns(Operation.ARGA,0);
             analyseExpr();
-            check(TokenType.SEMICOLON);
+            newIns(Operation.STORE64);
         }
+        expect(TokenType.SEMICOLON);
     }
 
     private void analyseExpr() throws CompileError{
@@ -407,7 +432,6 @@ public final class Analyser {
     }
 
     private void analyseExprItem() throws CompileError{
-        System.out.println("analy Item "+peek());
         if(nextIf(TokenType.L_PAREN) != null){
             analyseExpr();
             expect(TokenType.R_PAREN);

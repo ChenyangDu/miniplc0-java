@@ -24,6 +24,20 @@ public class SymbolEntry {
         this.stackOffset = stackOffset;
     }
 
+    @Override
+    public String toString() {
+        return "SymbolEntry{" +
+                "name='" + name + '\'' +
+                "\ttype=" + type +
+                "\tisConst=" + isConstant +
+                "\tisInit=" + isInitialized +
+                "\tlevel=" + level +
+                "\tisGlo=" + isGlobal +
+                "\tisParam=" + isParam +
+                "\tOffset=" + stackOffset +
+                '}';
+    }
+
     /**
      * @return the stackOffset
      */

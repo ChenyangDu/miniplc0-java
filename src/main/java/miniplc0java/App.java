@@ -109,7 +109,10 @@ public class App {
                 System.exit(0);
                 return;
             }
-            output.writeBytes(analyzer.program.toBytes());/*
+            output.writeBytes(analyzer.program.toBytes());
+            output.close();
+            scanner.close();
+            /*
 //            for (Instruction instruction : instructions) {
 //                //output.println(instruction.toString());
 //                //output.format("%-20s %s\n",instruction.toByteString() , instruction.toString());

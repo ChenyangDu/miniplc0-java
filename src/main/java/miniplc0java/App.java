@@ -95,8 +95,9 @@ public class App {
         } else if (result.getBoolean("analyse")) {
             while (scanner.hasNextLine()){
                 String str = scanner.nextLine();
-                output.println(str);
+                System.out.println(str);
             }
+            System.out.println("!@#!#!#!");
             // analyze
 //            var analyzer = new Analyser(tokenizer);
 //            List<Instruction> instructions;

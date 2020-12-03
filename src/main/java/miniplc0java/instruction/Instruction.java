@@ -59,10 +59,14 @@ public class Instruction {
 
     @Override
     public String toString() {
+        String str;
         if(haveParam()){
-            return this.opt.toString() + " " + x;
+            str = this.opt.toString() + " " + x;
+        }else{
+            str = this.opt.toString();
         }
-        return this.opt.toString();
+
+        return String.format("%-20s %s\n",toByteString(), str);
     }
 
     public byte[] toBytes(){

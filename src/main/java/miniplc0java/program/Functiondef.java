@@ -25,7 +25,7 @@ public class Functiondef {
                 "\tbodySize=" + bodySize +
                 "\tid="+id+"\n";
         for (Instruction ins : instructions) {
-            res += "\t\t"+ins.toString()+"\n";
+            res += "\t\t"+ins.toString();
         }
         return res;
     }

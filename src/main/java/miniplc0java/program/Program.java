@@ -40,13 +40,13 @@ public class Program {
         byte[] bytes = new byte[0];
         bytes = MyByte.merge(bytes,magic);
         bytes = MyByte.merge(bytes,version);
-        bytes = MyByte.merge(bytes,globaldefList.size(),1);
+        bytes = MyByte.merge(bytes,globaldefList.size(),4);
         for(Globaldef globaldef:globaldefList){
             bytes = MyByte.merge(bytes,globaldef.isConst?1:0,1);
             bytes = MyByte.merge(bytes,globaldef.value.length(),4);
             bytes = MyByte.merge(bytes,globaldef.value);
         }
-        bytes = MyByte.merge(bytes,functiondefList.size(),1);
+        bytes = MyByte.merge(bytes,functiondefList.size(),4);
         for(Functiondef fun:functiondefList){
             bytes = MyByte.merge(bytes,20,4);// 名字瞎写的
             bytes = MyByte.merge(bytes,fun.returnSize,4);

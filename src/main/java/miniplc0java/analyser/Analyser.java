@@ -53,7 +53,7 @@ public final class Analyser {
 
         System.out.println(program);
         System.out.println(program.toByteString());
-        System.out.println(Arrays.toString(program.toBytes()));
+//        System.out.println(Arrays.toString(program.toBytes()));
         return instructions;
     }
 
@@ -176,9 +176,6 @@ public final class Analyser {
         }
         program.functiondefList.add(0,functiondef);
         SymbolEntry symbolEntry = symboler.findSymbol(functiondef.name);
-
-
-
     }
 
     private void analyseDeclLetStmt(int level) throws CompileError{
@@ -252,7 +249,7 @@ public final class Analyser {
         }else{
             funEntry.returnSize = 0;
         }
-        // todo 如果函数有返回值，需要把所有参数+1
+        // 如果函数有返回值，需要把所有参数+1
 
         if(funEntry.returnSize == 1){
             for(int i=beforeParamSize;i<symboler.symbolTable.size();i++){
@@ -260,7 +257,7 @@ public final class Analyser {
             }
         }
 
-        //todo 获取函数的总长度
+        // 获取函数的总长度
         int oriSize = instructions.size();
         int oriSymSize = symboler.symbolTable.size();
         // 分析函数主体
@@ -285,7 +282,8 @@ public final class Analyser {
         symboler.popAllLevel();
         SymbolEntry symbol = symboler.addSymbol(funEntry.name,SymbolType.FUN_NAME,
                 false,false,0,true,false,startPos);
-        funEntry.id = symbol.stackOffset;
+        // 给_start函数留地方
+        funEntry.id = symbol.stackOffset+1;
         program.addFunc(funEntry);
     }
 

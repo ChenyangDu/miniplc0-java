@@ -265,6 +265,11 @@ public final class Analyser {
             }
         }
 
+        // 如果if有返回值，应该报错
+        if(funEntry.name.equals("main") && funEntry.returnSize != 0){
+            throw new AnalyzeError(ErrorCode.MainReturnError,startPos);
+        }
+
         // 获取函数的总长度
         int oriSize = instructions.size();
         int oriSymSize = symboler.symbolTable.size();

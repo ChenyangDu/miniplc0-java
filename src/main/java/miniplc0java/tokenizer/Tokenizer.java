@@ -224,6 +224,12 @@ public class Tokenizer {
                     value += '\r';
                 }else if(peek == 't'){
                     value += '\t';
+                }else if(peek == '\\'){
+                    value += '\\';
+                }else if(peek == '\"'){
+                    value += '"';
+                }else if(peek == '\''){
+                    value += '\'';
                 }else{
                     throw new TokenizeError(ErrorCode.InvalidInput,it.currentPos());
                 }

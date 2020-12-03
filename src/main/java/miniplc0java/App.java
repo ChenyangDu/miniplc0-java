@@ -2,6 +2,7 @@ package miniplc0java;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
@@ -102,7 +103,9 @@ public class App {
                 // 遇到错误不输出，直接退出
                 output.close();
                 scanner.close();
-                System.err.println(e);
+                for(StackTraceElement s:e.getStackTrace()){
+                    System.err.println(s);
+                }
                 System.exit(-1);
                 return;
             }
@@ -114,7 +117,7 @@ public class App {
                 // 遇到错误不输出，直接退出
                 output.close();
                 scanner.close();
-                System.err.println(e);
+                System.err.println(e.getStackTrace());
                 System.exit(-1);
                 return;
             }

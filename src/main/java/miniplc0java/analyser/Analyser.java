@@ -404,6 +404,7 @@ public final class Analyser {
     private boolean isExprBegin(TokenType type){
         return type == TokenType.IDENT ||
                 type == TokenType.L_PAREN ||
+                type == TokenType.MINUS||
                 type == TokenType.CHAR_LITERAL ||
                 type == TokenType.DOUBLE_LITERAL ||
                 type == TokenType.UINT_LITERAL ||
@@ -500,6 +501,7 @@ public final class Analyser {
             newIns(Operation.PUSH,0);
             type = peek().getTokenType();
         }
+        System.out.println("sign "+minusCnt);
         analyseExprItem();
         while ((minusCnt--) !=0){
             newIns(Operation.SUB_I);

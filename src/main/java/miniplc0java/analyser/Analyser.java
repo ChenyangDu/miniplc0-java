@@ -196,6 +196,10 @@ public final class Analyser {
         expect(TokenType.COLON);
         Token type = expect(TokenType.IDENT);
         // 符号表相关
+        SymbolType symbolType = tokenToSymbolType(type);
+        if(symbolType == SymbolType.VOID_NAME){
+            throw new AnalyzeError(ErrorCode.TypeError,type.getStartPos());
+        }
         symboler.addSymbol(name,tokenToSymbolType(type),false,false,level,
                 level==0,false,ident.getStartPos());
         if(nextIf(TokenType.ASSIGN) != null){
@@ -212,6 +216,10 @@ public final class Analyser {
         String name = (String)ident.getValue();
         expect(TokenType.COLON);
         Token type = expect(TokenType.IDENT);
+        SymbolType symbolType = tokenToSymbolType(type);
+        if(symbolType == SymbolType.VOID_NAME){
+            throw new AnalyzeError(ErrorCode.TypeError,type.getStartPos());
+        }
         symboler.addSymbol(name,tokenToSymbolType(type),false,false,level,
                 level==0,false,ident.getStartPos());
         expect(TokenType.ASSIGN);

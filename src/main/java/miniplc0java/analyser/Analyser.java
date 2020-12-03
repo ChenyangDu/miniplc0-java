@@ -263,6 +263,9 @@ public final class Analyser {
         // 分析函数主体
         analyseBlockStmt(0);
 
+        // 最后加上return
+        newIns(Operation.RET);
+
         // 获取函数中新增的指令数量
         int length = 0;
         for(int i=oriSize;i<instructions.size();i++){

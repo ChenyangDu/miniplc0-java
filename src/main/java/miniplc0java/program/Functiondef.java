@@ -19,8 +19,8 @@ public class Functiondef {
     @Override
     public String toString() {
         String res = "\n\tname='" + name + '\'' +
-                "\tparams=" + params.size() +
                 "\treturnSize=" + returnSize +
+                "\tparams=" + params.size() +
                 "\tlocalSize=" + localSize +
                 "\tbodySize=" + bodySize +
                 "\tid="+id+"\n";

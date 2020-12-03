@@ -149,7 +149,16 @@ public final class Analyser {
         expect(TokenType.EOF);
     }
 
+    private void addMain()throws AnalyzeError{
+        Functiondef mainFun = program.find("main");
+        if(mainFun == null){
+            throw new AnalyzeError(ErrorCode.NoMain,null);
+        }
+        newIns(Operation.CALL,mainFun.id);
+    }
     private void addStartFun() throws AnalyzeError {
+
+        addMain();
         Functiondef functiondef = new Functiondef();
         functiondef.name = "_start";
         functiondef.id = 0;
@@ -168,11 +177,7 @@ public final class Analyser {
         program.functiondefList.add(0,functiondef);
         SymbolEntry symbolEntry = symboler.findSymbol(functiondef.name);
 
-        Functiondef mainFun = program.find("main");
-        if(mainFun == null){
-            throw new AnalyzeError(ErrorCode.NoMain,null);
-        }
-        newIns(Operation.CALL,mainFun.id);
+
 
     }
 

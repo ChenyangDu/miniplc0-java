@@ -501,10 +501,17 @@ public final class Analyser {
         }else if(token.getTokenType() == TokenType.IDENT){
             pushIdent(token);
         }else if(token.getTokenType() == TokenType.STRING_LITERAL){
-
+            pushString(token);
         }
     }
 
+    private void pushString(Token token) throws CompileError {
+        expect(TokenType.STRING_LITERAL);
+        String value = (String)token.getValue();
+        for(int i=0;i<value.length();i++){
+            newIns(Operation.PUSH, (int) value.charAt(i));
+        }
+    }
     private void pushUint(Token token) throws CompileError {
         expect(TokenType.UINT_LITERAL);
         newIns(Operation.PUSH,Long.parseLong((String)token.getValue()));
@@ -625,6 +632,19 @@ public final class Analyser {
             analyseExpr();
             expect(TokenType.R_PAREN);
             newIns(Operation.PRINT_I);
+        }else if(name.equals("putstr")){
+            expect(TokenType.L_PAREN);
+
+            if(peek().getTokenType() != TokenType.STRING_LITERAL){
+                throw new AnalyzeError(ErrorCode.InvalidInput,peekedToken.getStartPos());
+            }
+            String str = (String) peek().getValue();
+            analyseExprItem();
+            for(int i=0;i<str.length();i++){
+                newIns(Operation.PRINT_C);
+            }
+
+            expect(TokenType.R_PAREN);
         }
     }
     

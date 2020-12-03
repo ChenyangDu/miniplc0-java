@@ -146,7 +146,15 @@ public final class Analyser {
             }
         }
         addStartFun();
+        addFunName();
         expect(TokenType.EOF);
+    }
+
+    private void addFunName(){
+        for(Functiondef fun:program.functiondefList){
+            fun.name_id = program.globaldefList.size();
+            program.addGlobal(new Globaldef(true,fun.name));
+        }
     }
 
     private void addMain()throws AnalyzeError{
@@ -374,6 +382,7 @@ public final class Analyser {
             analyseExpr();
             newIns(Operation.STORE64);
         }
+        newIns(Operation.RET);
         expect(TokenType.SEMICOLON);
     }
 

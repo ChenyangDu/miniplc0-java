@@ -10,6 +10,7 @@ import java.util.List;
 public class Functiondef {
     public String name;
     public int id;
+    public int name_id;
     public List<SymbolEntry> params = new ArrayList<>();
     public int returnSize;
     public int localSize;

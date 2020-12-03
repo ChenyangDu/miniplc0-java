@@ -8,8 +8,8 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Program {
-    private byte[] magic = new byte[]{0,0,0,0};
-    private byte[] version = new byte[]{0,0,0,0};
+    private byte[] magic = new byte[]{0x72,0x30,0x3b,0x3e};
+    private byte[] version = new byte[]{0,0,0,1};
     public List<Globaldef> globaldefList = new ArrayList<>();
     public List<Functiondef> functiondefList = new ArrayList<>();
 

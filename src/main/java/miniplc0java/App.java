@@ -21,7 +21,7 @@ import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
 
 public class App {
-    public static void main(String[] args) throws CompileError, IOException {
+    public static void main(String[] args) throws CompileError{
         var argparse = buildArgparse();
         Namespace result;
         try {
@@ -104,9 +104,16 @@ public class App {
                 System.exit(0);
                 return;
             }
-            output.write(analyzer.program.toBytes());
-            output.close();
-            scanner.close();
+            try {
+                output.write(analyzer.program.toBytes());
+                output.close();
+                scanner.close();
+            } catch (Exception e) {
+                // 遇到错误不输出，直接退出
+                System.err.println(e);
+                System.exit(0);
+                return;
+            }
             /*
 //            for (Instruction instruction : instructions) {
 //                //output.println(instruction.toString());

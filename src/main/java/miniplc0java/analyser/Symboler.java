@@ -29,11 +29,10 @@ public class Symboler {
     public void addSymbol(SymbolEntry symbolEntry){
         symbolTable.add(symbolEntry);
     }
-    public void popAllLevel(){
-        int level = symbolTable.get(symbolTable.size()-1).level;
+    public void popAllLevel(int level){
         for(int i=symbolTable.size()-1;i>=0;i--) {
             SymbolEntry symbol = symbolTable.get(i);
-            if(symbol.level > 0){
+            if(symbol.level > level){
                 symbolTable.remove(i);
             }else{
                 break;

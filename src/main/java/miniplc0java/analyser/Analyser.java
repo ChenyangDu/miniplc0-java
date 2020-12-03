@@ -31,6 +31,9 @@ public final class Analyser {
     /** 程序 */
     public Program program = new Program();
 
+    /** 当前正在分析的函数 */
+    Functiondef nowFunc = null;
+
     /** 算符优先文法的栈 */
     List<TokenType> opStack = new ArrayList<>();
 
@@ -225,6 +228,7 @@ public final class Analyser {
 
         // 获取函数名字
         Functiondef funEntry = new Functiondef();
+        nowFunc = funEntry;
         funEntry.name = (String)expect(TokenType.IDENT).getValue();
         expect(TokenType.L_PAREN);
 
@@ -265,14 +269,19 @@ public final class Analyser {
             }
         }
 
-        // 如果if有返回值，应该报错
-        if(funEntry.name.equals("main") && funEntry.returnSize != 0){
-            throw new AnalyzeError(ErrorCode.MainReturnError,startPos);
-        }
-
         // 获取函数的总长度
         int oriSize = instructions.size();
         int oriSymSize = symboler.symbolTable.size();
+
+        // 解决递归问题，提前加入符号表和函数列表
+
+        SymbolEntry symbol = symboler.addSymbol(funEntry.name,SymbolType.FUN_NAME,
+                false,false,0,true,false,startPos);
+
+        funEntry.id = symbol.stackOffset;
+        program.addFunc(funEntry);
+
+
         // 分析函数主体
         analyseBlockStmt(0);
 
@@ -293,14 +302,9 @@ public final class Analyser {
         // 获取函数中需要的局部变量数量
         funEntry.localSize = symboler.symbolTable.size() - oriSymSize;
 
-        //todo 建立函数的符号表
+        // 建立函数的符号表
 
-        symboler.popAllLevel();
-        SymbolEntry symbol = symboler.addSymbol(funEntry.name,SymbolType.FUN_NAME,
-                false,false,0,true,false,startPos);
-        // 给_start函数留地方
-        funEntry.id = symbol.stackOffset;
-        program.addFunc(funEntry);
+        symboler.popAllLevel(0);
     }
 
     /*
@@ -354,16 +358,12 @@ public final class Analyser {
         newIns(Operation.BR_FALSE);
         analyseBlockStmt(level);
         br_pos = instructions.size();
-        System.out.println("after if"+peek());
         if(nextIf(TokenType.ELSE_KW) != null){
-            System.out.println("yes get else");
             newIns(Operation.BR);
             instructions.get(br_false_pos).setX(br_pos - br_false_pos);
             if(check(TokenType.IF_KW)){ // else if
-                System.out.println("ana else if");
                 analyseIfStmt(level);
             }else{
-                System.out.println("ana else" + peek());
                 analyseBlockStmt(level); // else
             }
             instructions.get(br_pos).setX(instructions.size() - br_pos-1);
@@ -385,8 +385,14 @@ public final class Analyser {
 
     private void analyseReturn() throws CompileError{
         expect(TokenType.RETURN_KW);
+        if(peek().getTokenType() == TokenType.SEMICOLON){
+            if(nowFunc.returnSize != 0)
+                throw new AnalyzeError(ErrorCode.ReturnError,peek().getStartPos());
+        }else{
+            if(nowFunc.returnSize == 0)
+                throw new AnalyzeError(ErrorCode.ReturnError,peek().getStartPos());
+        }
         if(nextIf(TokenType.SEMICOLON) == null){
-            System.out.println("return "+peek());
             newIns(Operation.ARGA,0);
             analyseExpr();
             newIns(Operation.STORE64);
@@ -506,7 +512,6 @@ public final class Analyser {
             newIns(Operation.PUSH,0);
             type = peek().getTokenType();
         }
-        System.out.println("sign "+minusCnt);
         analyseExprItem();
         while ((minusCnt--) !=0){
             newIns(Operation.SUB_I);

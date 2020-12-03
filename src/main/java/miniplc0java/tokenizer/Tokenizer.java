@@ -216,13 +216,19 @@ public class Tokenizer {
         char peek = it.nextChar();
         String value = "";
         while (peek != '"'){
-            value += peek;
             if(peek == '\\'){
                 peek = it.nextChar();
-                value += peek;
-                if("\\\"'nrt".indexOf(peek) == -1){
+                if(peek == 'n'){
+                    value += '\n';
+                }else if(peek == 'r'){
+                    value += '\r';
+                }else if(peek == 't'){
+                    value += '\t';
+                }else{
                     throw new TokenizeError(ErrorCode.InvalidInput,it.currentPos());
                 }
+            }else {
+                value += peek;
             }
             peek = it.nextChar();
             System.out.println(peek);

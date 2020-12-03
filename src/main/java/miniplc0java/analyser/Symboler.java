@@ -33,7 +33,7 @@ public class Symboler {
         int level = symbolTable.get(symbolTable.size()-1).level;
         for(int i=symbolTable.size()-1;i>=0;i--) {
             SymbolEntry symbol = symbolTable.get(i);
-            if(symbol.level == level){
+            if(symbol.level > 0){
                 symbolTable.remove(i);
             }else{
                 break;

@@ -103,7 +103,7 @@ public class App {
                 output.close();
                 scanner.close();
                 System.err.println(e);
-                System.exit(0);
+                System.exit(-1);
                 return;
             }
             try {
@@ -115,7 +115,7 @@ public class App {
                 output.close();
                 scanner.close();
                 System.err.println(e);
-                System.exit(0);
+                System.exit(-1);
                 return;
             }
             /*

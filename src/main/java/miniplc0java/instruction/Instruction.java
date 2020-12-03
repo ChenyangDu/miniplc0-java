@@ -110,6 +110,7 @@ public class Instruction {
             case BR_FALSE:
             case BR_TRUE:
             case CALL:
+            case CALL_NAME:
                 haParam = true;
         }
         return haParam;

@@ -294,7 +294,7 @@ public final class Analyser {
         SymbolEntry symbol = symboler.addSymbol(funEntry.name,SymbolType.FUN_NAME,
                 false,false,0,true,false,startPos);
         // 给_start函数留地方
-        funEntry.id = symbol.stackOffset+1;
+        funEntry.id = symbol.stackOffset;
         program.addFunc(funEntry);
     }
 

@@ -627,6 +627,10 @@ public final class Analyser {
             expect(TokenType.L_PAREN);
             expect(TokenType.R_PAREN);
             newIns(Operation.SCAN_I);
+        }else if(name.equals("getchar")){
+            expect(TokenType.L_PAREN);
+            newIns(Operation.SCAN_C);
+            expect(TokenType.R_PAREN);
         }else if(name.equals("putint")){
             expect(TokenType.L_PAREN);
             analyseExpr();
@@ -648,6 +652,11 @@ public final class Analyser {
         }else if(name.equals("putchar")){
             expect(TokenType.L_PAREN);
             analyseExpr();
+            newIns(Operation.PRINT_C);
+            expect(TokenType.R_PAREN);
+        }else if(name.equals("putln")){
+            expect(TokenType.L_PAREN);
+            newIns(Operation.PUSH,(int)'\n');
             newIns(Operation.PRINT_C);
             expect(TokenType.R_PAREN);
         }

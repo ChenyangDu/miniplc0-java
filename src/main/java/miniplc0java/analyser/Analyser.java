@@ -508,7 +508,7 @@ public final class Analyser {
     private void pushString(Token token) throws CompileError {
         expect(TokenType.STRING_LITERAL);
         String value = (String)token.getValue();
-        for(int i=0;i<value.length();i++){
+        for(int i=value.length()-1;i>=0;i--){
             newIns(Operation.PUSH, (int) value.charAt(i));
         }
     }

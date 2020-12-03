@@ -20,6 +20,7 @@ public class Functiondef {
     @Override
     public String toString() {
         String res = "\n\tname='" + name + '\'' +
+                "\tnameid=" + name_id +
                 "\treturnSize=" + returnSize +
                 "\tparams=" + params.size() +
                 "\tlocalSize=" + localSize +
@@ -33,7 +34,7 @@ public class Functiondef {
 
     public byte[] toBytes(){
         byte[] res = new byte[0];
-        res = MyByte.merge(res,id,4);
+        res = MyByte.merge(res,name_id,4);
         res = MyByte.merge(res,params.size(),4);
         res = MyByte.merge(res,returnSize,4);
         res = MyByte.merge(res,localSize,4);

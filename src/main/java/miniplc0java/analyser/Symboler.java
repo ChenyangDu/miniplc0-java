@@ -81,7 +81,8 @@ public class Symboler {
 
         for(int i=symbolTable.size()-1;i>=0;i--){
             SymbolEntry symbol = symbolTable.get(i);
-            if(symbol.isGlobal == symbolEntry.isGlobal &&
+            if(symbol.type != SymbolType.FUN_NAME &&
+            symbol.isGlobal == symbolEntry.isGlobal &&
             symbol.isParam == symbolEntry.isParam &&
             symbol.level == symbolEntry.level)
                 res ++;

@@ -48,11 +48,6 @@ public final class Analyser {
     public List<Instruction> analyse() throws CompileError {
         analyseProgram();
         System.out.println("\n"+symboler);
-        for(SymbolEntry symbol:symboler.symbolTable){
-            if(symbol.isGlobal && symbol.type != SymbolType.FUN_NAME){
-                program.addGlobal(new Globaldef(symbol.isConstant,"00000000"));
-            }
-        }
 
         System.out.println(program);
 //        System.out.println(program.toByteString());
@@ -149,8 +144,17 @@ public final class Analyser {
             }
         }
         addStartFun();
+        addGloName();
         addFunName();
         expect(TokenType.EOF);
+    }
+
+    private void addGloName(){
+        for(SymbolEntry symbol:symboler.symbolTable){
+            if(symbol.isGlobal && symbol.type != SymbolType.FUN_NAME){
+                program.addGlobal(new Globaldef(symbol.isConstant,"00000000"));
+            }
+        }
     }
 
     private void addFunName(){

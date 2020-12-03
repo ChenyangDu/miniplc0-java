@@ -387,7 +387,6 @@ public final class Analyser {
             newIns(Operation.STORE64);
         }
         newIns(Operation.RET);
-        expect(TokenType.SEMICOLON);
     }
 
     private void analyseExpr() throws CompileError{

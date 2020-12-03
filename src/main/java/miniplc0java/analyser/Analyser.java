@@ -492,15 +492,19 @@ public final class Analyser {
 
     private void analyseExprSign() throws CompileError{
         TokenType type = peek().getTokenType();
-        if(type == TokenType.MINUS /*|| type == TokenType.PLUS*/){
+        int minusCnt = 0;
+        while(type == TokenType.MINUS){
             //todo double
             next();
+            minusCnt++;
             newIns(Operation.PUSH,0);
-            analyseExprItem();
-            newIns(Operation.SUB_I);
-        }else{
-            analyseExprItem();
+            type = peek().getTokenType();
         }
+        analyseExprItem();
+        while ((minusCnt--) !=0){
+            newIns(Operation.SUB_I);
+        }
+
     }
 
     private void analyseExprItem() throws CompileError{

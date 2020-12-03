@@ -14,6 +14,14 @@ public class MyByte {
         return str.getBytes();
     }
 
+    public static String bytesToString(byte[] bytes){
+        String str = "";
+        for(byte by : bytes){
+            str += String.format("%02x",by);
+        }
+        return str;
+    }
+
     public static byte[] merge(byte[] a,byte []b){
         byte[]c =  new byte[a.length+b.length];
         System.arraycopy(a, 0, c, 0, a.length);

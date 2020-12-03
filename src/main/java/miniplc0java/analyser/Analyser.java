@@ -645,6 +645,11 @@ public final class Analyser {
             }
 
             expect(TokenType.R_PAREN);
+        }else if(name.equals("putchar")){
+            expect(TokenType.L_PAREN);
+            analyseExpr();
+            newIns(Operation.PRINT_C);
+            expect(TokenType.R_PAREN);
         }
     }
     

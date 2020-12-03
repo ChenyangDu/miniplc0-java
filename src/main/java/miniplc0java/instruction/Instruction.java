@@ -2,6 +2,7 @@ package miniplc0java.instruction;
 
 import miniplc0java.util.MyByte;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 public class Instruction {
@@ -66,7 +67,7 @@ public class Instruction {
             str = this.opt.toString();
         }
 
-        return String.format("%-20s %s\n",toByteString(), str);
+        return String.format("%-20s %s\n", MyByte.bytesToString(toBytes()), str);
     }
 
     public byte[] toBytes(){
@@ -125,6 +126,9 @@ public class Instruction {
         }
         if(this.opt.ordinal() >= Operation.ADD_I.ordinal()){
             offset = 0x20-18;
+        }
+        if(this.opt.ordinal() >= Operation.CMP_I.ordinal()){
+            offset = (byte) (0x30-Operation.CMP_I.ordinal());
         }
         if(this.opt.ordinal() >= Operation.BR.ordinal()){
             offset = 0x41-43;

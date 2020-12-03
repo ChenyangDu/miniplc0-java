@@ -44,7 +44,7 @@ public final class Analyser {
 
     public List<Instruction> analyse() throws CompileError {
         analyseProgram();
-        System.out.println(symboler);
+        System.out.println("\n"+symboler);
         for(SymbolEntry symbol:symboler.symbolTable){
             if(symbol.isGlobal && symbol.type != SymbolType.FUN_NAME){
                 program.addGlobal(new Globaldef(symbol.isConstant,"00000000"));
@@ -52,7 +52,7 @@ public final class Analyser {
         }
 
         System.out.println(program);
-        System.out.println(program.toByteString());
+//        System.out.println(program.toByteString());
 //        System.out.println(Arrays.toString(program.toBytes()));
         return instructions;
     }

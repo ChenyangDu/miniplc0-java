@@ -38,7 +38,7 @@ public class Tokenizer {
         } else {
             res = lexOperatorOrUnknown();
         }
-        System.out.println(res);
+        System.out.print(res.getValue() + " ");
         return res;
     }
 

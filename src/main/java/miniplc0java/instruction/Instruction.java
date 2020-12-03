@@ -136,10 +136,10 @@ public class Instruction {
             offset = (byte)(0x50 - Operation.SCAN_I.ordinal());
         }
         if(this.opt.ordinal() >= Operation.PRINT_I.ordinal()){
-            offset = (byte)(0x50 - Operation.PRINT_I.ordinal());
+            offset = (byte)(0x54 - Operation.PRINT_I.ordinal());
         }
         if(this.opt.ordinal() >= Operation.PANIC.ordinal()){
-            offset = (byte)(0x50 - Operation.PANIC.ordinal());
+            offset = (byte)(0xfe - Operation.PANIC.ordinal());
         }
         return (byte)(this.opt.ordinal() + offset);
     }

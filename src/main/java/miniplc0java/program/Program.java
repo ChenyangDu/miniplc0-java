@@ -48,14 +48,7 @@ public class Program {
         }
         bytes = MyByte.merge(bytes,functiondefList.size(),4);
         for(Functiondef fun:functiondefList){
-            bytes = MyByte.merge(bytes,20,4);// 名字瞎写的
-            bytes = MyByte.merge(bytes,fun.returnSize,4);
-            bytes = MyByte.merge(bytes,fun.params.size(),4);
-            bytes = MyByte.merge(bytes,fun.localSize,4);
-            bytes = MyByte.merge(bytes,fun.bodySize,4);
-            for(Instruction ins : fun.instructions){
-                bytes = MyByte.merge(bytes,ins.toBytes());
-            }
+            bytes = MyByte.merge(bytes,fun.toBytes());
         }
         return bytes;
     }

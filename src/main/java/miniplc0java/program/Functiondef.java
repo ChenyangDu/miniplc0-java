@@ -32,7 +32,7 @@ public class Functiondef {
 
     public byte[] toBytes(){
         byte[] res = new byte[0];
-        res = MyByte.merge(res,name);
+        res = MyByte.merge(res,id,4);
         res = MyByte.merge(res,params.size(),4);
         res = MyByte.merge(res,returnSize,4);
         res = MyByte.merge(res,localSize,4);

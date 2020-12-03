@@ -134,7 +134,7 @@ public class Instruction {
             offset = (byte) (0x34-Operation.NEG_I.ordinal());
         }
         if(this.opt.ordinal() >= Operation.BR.ordinal()){
-            offset = 0x41-43;
+            offset = (byte) (0x41-Operation.BR.ordinal());
         }
         if(this.opt.ordinal() >= Operation.CALL.ordinal()){
             offset = (byte)(0x48 - Operation.CALL.ordinal());

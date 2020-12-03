@@ -9,7 +9,7 @@ import static org.junit.Assert.*;
 
 public class AnalyserTest {
     public static void main(String[] args) throws CompileError {
-        String[] strings = {"-l", "in.txt","-o", "output.bin"};
+        String[] strings = {"-l", "data/in.txt","-o", "data/output.bin"};
         App.main(strings);
     }
 }

@@ -349,12 +349,16 @@ public final class Analyser {
         newIns(Operation.BR_FALSE);
         analyseBlockStmt(level);
         br_pos = instructions.size();
+        System.out.println("after if"+peek());
         if(nextIf(TokenType.ELSE_KW) != null){
+            System.out.println("yes get else");
             newIns(Operation.BR);
             instructions.get(br_false_pos).setX(br_pos - br_false_pos);
             if(check(TokenType.IF_KW)){ // else if
+                System.out.println("ana else if");
                 analyseIfStmt(level);
             }else{
+                System.out.println("ana else" + peek());
                 analyseBlockStmt(level); // else
             }
             instructions.get(br_pos).setX(instructions.size() - br_pos-1);
@@ -387,12 +391,24 @@ public final class Analyser {
     }
 
     private void analyseExpr() throws CompileError{
+        if(!isExprBegin(peek().getTokenType())){
+            throw new AnalyzeError(ErrorCode.InvalidInput,peekedToken.getStartPos());
+        }
         analyseExprCmp();
 //        while (nextIf(TokenType.ASSIGN) != null){
 //            analyseExprCmp();
 //            // todo
 //        }
         check(TokenType.SEMICOLON);
+    }
+
+    private boolean isExprBegin(TokenType type){
+        return type == TokenType.IDENT ||
+                type == TokenType.L_PAREN ||
+                type == TokenType.CHAR_LITERAL ||
+                type == TokenType.DOUBLE_LITERAL ||
+                type == TokenType.UINT_LITERAL ||
+                type == TokenType.STRING_LITERAL;
     }
 
 

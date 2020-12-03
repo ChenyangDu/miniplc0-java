@@ -237,7 +237,9 @@ public class Tokenizer {
                 value += peek;
             }
             peek = it.nextChar();
-            System.out.println(peek);
+            if(peek == 0){
+                throw new TokenizeError(ErrorCode.InvalidInput,it.currentPos());
+            }
         }
 
         return new Token(TokenType.STRING_LITERAL,value,startPos,it.currentPos());

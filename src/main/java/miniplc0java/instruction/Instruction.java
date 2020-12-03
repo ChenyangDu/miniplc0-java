@@ -122,13 +122,16 @@ public class Instruction {
             offset = 5;
         }
         if(this.opt.ordinal() >= Operation.LOAD8.ordinal()){
-            offset = 0x10-8;
+            offset = (byte) (0x10-Operation.LOAD8.ordinal());
         }
         if(this.opt.ordinal() >= Operation.ADD_I.ordinal()){
-            offset = 0x20-18;
+            offset = (byte) (0x20-Operation.ADD_I.ordinal());
         }
         if(this.opt.ordinal() >= Operation.CMP_I.ordinal()){
             offset = (byte) (0x30-Operation.CMP_I.ordinal());
+        }
+        if(this.opt.ordinal() >= Operation.NEG_I.ordinal()){
+            offset = (byte) (0x34-Operation.NEG_I.ordinal());
         }
         if(this.opt.ordinal() >= Operation.BR.ordinal()){
             offset = 0x41-43;

@@ -33,7 +33,7 @@ public class Tokenizer {
         Token res = null;
         if (Character.isDigit(peek)) {
             res = lexNum();
-        } else if (Character.isAlphabetic(peek)) {
+        } else if (Character.isAlphabetic(peek) || peek == '_') {
             res = lexIdentOrKeyword();
         } else {
             res = lexOperatorOrUnknown();
@@ -70,7 +70,7 @@ public class Tokenizer {
         String value = "";
         Pos startPos = it.currentPos();
         char peek = it.peekChar();
-        while (Character.isDigit(peek) || Character.isAlphabetic(peek)){
+        while (Character.isDigit(peek) || Character.isAlphabetic(peek) || peek == '_'){
             value += it.nextChar();
             peek = it.peekChar();
         }

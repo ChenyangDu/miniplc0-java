@@ -224,7 +224,7 @@ public final class Analyser {
         if(symbolType == SymbolType.VOID_NAME){
             throw new AnalyzeError(ErrorCode.TypeError,type.getStartPos());
         }
-        symboler.addSymbol(name,tokenToSymbolType(type),false,false,level,
+        symboler.addSymbol(name,tokenToSymbolType(type),true,false,level,
                 level==0,false,ident.getStartPos());
         expect(TokenType.ASSIGN);
         pushVar(ident,false);
@@ -610,6 +610,9 @@ public final class Analyser {
         }else{
             expect(TokenType.IDENT);
             if(nextIf(TokenType.ASSIGN) != null) {
+                if(symbol.isConstant){
+                    throw new AnalyzeError(ErrorCode.AssignToConstant,token.getStartPos());
+                }
                 pushVar(token,false);
                 analyseExpr();
                 newIns(Operation.STORE64);

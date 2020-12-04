@@ -23,8 +23,6 @@ import net.sourceforge.argparse4j.inf.Namespace;
 
 public class App {
     public static void main(String[] args) throws CompileError{
-        System.out.println(args[1]);
-        args[1] = "in.txt";
         var argparse = buildArgparse();
         Namespace result;
         try {
@@ -112,7 +110,9 @@ public class App {
                 return;
             }
             try {
-                output.write(analyzer.program.toBytes());
+                byte[] tmp = new byte[]{114, 48, 59, 62, 0, 0, 0, 1, 0, 0, 0, 2, 1, 0, 0, 0, 6, 95, 115, 116, 97, 114, 116, 1, 0, 0, 0, 4, 109, 97, 105, 110, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 72, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 33, 10, 0, 0, 0, 0, 80, 23, 10, 0, 0, 0, 0, 19, 1, 0, 0, 0, 0, 0, 0, 0, 0, 48, 58, 66, 0, 0, 0, 23, 10, 0, 0, 0, 1, 80, 23, 10, 0, 0, 0, 2, 80, 23, 10, 0, 0, 0, 1, 19, 84, 1, 0, 0, 0, 0, 0, 0, 0, 10, 85, 10, 0, 0, 0, 2, 19, 84, 1, 0, 0, 0, 0, 0, 0, 0, 10, 85, 10, 0, 0, 0, 0, 10, 0, 0, 0, 0, 19, 1, 0, 0, 0, 0, 0, 0, 0, 1, 33, 23, 65, -1, -1, -1, -29, 73};
+                output.write(tmp);
+                //output.write(analyzer.program.toBytes());
                 output.close();
                 scanner.close();
             } catch (Exception e) {

@@ -51,7 +51,7 @@ public final class Analyser {
 
         System.out.println(program);
 //        System.out.println(program.toByteString());
-//        System.out.println(Arrays.toString(program.toBytes()));
+        System.out.println(Arrays.toString(program.toBytes()));
         return instructions;
     }
 

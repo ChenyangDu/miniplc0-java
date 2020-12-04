@@ -1,0 +1,15 @@
+fn main() -> void {
+    let count: int;
+    let a: int;
+    let b: int;
+    count = getint();
+    while count > 0 {
+        a = getint();
+        b = getint();
+        putint(a);
+        putln();
+        putint(b);
+        putln();
+        count = count - 1;
+    }
+}

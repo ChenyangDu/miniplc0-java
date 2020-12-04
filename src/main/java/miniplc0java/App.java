@@ -23,6 +23,8 @@ import net.sourceforge.argparse4j.inf.Namespace;
 
 public class App {
     public static void main(String[] args) throws CompileError{
+        System.out.println(args[1]);
+        args[1] = "in.txt";
         var argparse = buildArgparse();
         Namespace result;
         try {

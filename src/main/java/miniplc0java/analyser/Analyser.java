@@ -311,8 +311,8 @@ public final class Analyser {
             instructions.remove(oriSize);
         }
 
-        // 获取函数中需要的局部变量数量
-        funEntry.localSize = symboler.symbolTable.size() - oriSymSize;
+        // 获取函数中需要的局部变量数量减掉自己占用的空间
+        funEntry.localSize = symboler.symbolTable.size() - oriSymSize-1;
 
         // 建立函数的符号表
 

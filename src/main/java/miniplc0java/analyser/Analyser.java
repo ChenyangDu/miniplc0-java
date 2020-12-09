@@ -358,6 +358,10 @@ public final class Analyser {
                 next();
             } else if(type == TokenType.R_BRACE) {
                 break;
+            } else if(type == TokenType.BREAK_KW) {
+                analyseBreak(level);
+            } else if(type == TokenType.CONTINUE_KW) {
+                analyseContinue(level);
             }else{
                 analyseExpr();
             }
@@ -368,7 +372,9 @@ public final class Analyser {
         System.out.println(level-1);
         System.out.println(symboler);
         symboler.popAllLevel(level-1);
+        System.out.println(symboler);
     }
+
 
     private void analyseIfStmt(int level) throws CompileError{
         expect(TokenType.IF_KW);
@@ -403,6 +409,14 @@ public final class Analyser {
         instructions.get(br_pos).setX(instructions.size() - br_pos-1);
     }
 
+    private void analyseBreak(int level)throws CompileError{
+        expect(TokenType.BREAK_KW);
+        newIns(Operation.BR,0);
+    }
+    private void analyseContinue(int level)throws CompileError{
+        expect(TokenType.CONTINUE_KW);
+        newIns(Operation.BR,0);
+    }
     private void analyseReturn() throws CompileError{
         expect(TokenType.RETURN_KW);
         if(peek().getTokenType() == TokenType.SEMICOLON){

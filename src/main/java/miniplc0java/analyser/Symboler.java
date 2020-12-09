@@ -34,6 +34,7 @@ public class Symboler {
             SymbolEntry symbol = symbolTable.get(i);
             if(symbol.level > level){
                 symbolTable.remove(i);
+                i--;
             }
         }
     }

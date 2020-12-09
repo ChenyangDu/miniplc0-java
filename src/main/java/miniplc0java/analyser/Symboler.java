@@ -30,7 +30,7 @@ public class Symboler {
         symbolTable.add(symbolEntry);
     }
     public void popAllLevel(int level){
-        for(int i=symbolTable.size()-1;i>=0;i--) {
+        for(int i=0;i<symbolTable.size();i++) {
             SymbolEntry symbol = symbolTable.get(i);
             if(symbol.level > level){
                 symbolTable.remove(i);

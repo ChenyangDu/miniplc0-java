@@ -316,7 +316,7 @@ public final class Analyser {
 
         // 建立函数的符号表
 
-        symboler.popAllLevel(0);
+        //symboler.popAllLevel(0);
     }
 
     /*
@@ -360,6 +360,11 @@ public final class Analyser {
             }
         }
         expect(TokenType.R_BRACE);
+
+        // 作用域清空
+        System.out.println(symboler);
+        System.out.println(level);
+        symboler.popAllLevel(level-1);
     }
 
     private void analyseIfStmt(int level) throws CompileError{

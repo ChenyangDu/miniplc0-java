@@ -40,6 +40,12 @@ public final class Analyser {
     /** 下一个变量的栈偏移 */
     int nextOffset = 0;
 
+    /** break 和 continue */
+    List<Integer> break_levels = new ArrayList<>();
+    List<Integer> break_poses = new ArrayList<>();
+    List<Integer> continue_levels = new ArrayList<>();
+    List<Integer> continue_poses = new ArrayList<>();
+
     public Analyser(Tokenizer tokenizer) {
         this.tokenizer = tokenizer;
         this.instructions = new ArrayList<>();
@@ -368,11 +374,11 @@ public final class Analyser {
         }
         expect(TokenType.R_BRACE);
 
-        // 作用域清空
-        System.out.println(level-1);
-        System.out.println(symboler);
+//        // 作用域清空
+//        System.out.println(level-1);
+//        System.out.println(symboler);
         symboler.popAllLevel(level-1);
-        System.out.println(symboler);
+//        System.out.println(symboler);
     }
 
 
@@ -406,15 +412,42 @@ public final class Analyser {
         newIns(Operation.BR_FALSE);
         analyseBlockStmt(level);
         newIns(Operation.BR,(start - instructions.size() - 1));
+
         instructions.get(br_pos).setX(instructions.size() - br_pos-1);
+        System.out.println("while");
+        //break
+        for(int i=0;i<break_levels.size();i++){
+            System.out.println(break_levels.get(i)+" "+break_poses.get(i));
+            if(break_levels.get(i) > level){
+                instructions.get(break_poses.get(i)).setX(break_poses.get(i)-br_pos-1);
+                break_levels.remove(i);
+                break_poses.remove(i);
+                i--;
+            }
+        }
+
+        //continue
+        for(int i=0;i<continue_levels.size();i++){
+            if(continue_levels.get(i) > level){
+                instructions.get(continue_poses.get(i)).setX((start - continue_poses.get(i) - 1));
+                continue_levels.remove(i);
+                continue_poses.remove(i);
+                i--;
+            }
+        }
+
     }
 
     private void analyseBreak(int level)throws CompileError{
         expect(TokenType.BREAK_KW);
+        break_levels.add(level);
+        break_poses.add(instructions.size());
         newIns(Operation.BR,0);
     }
     private void analyseContinue(int level)throws CompileError{
         expect(TokenType.CONTINUE_KW);
+        continue_levels.add(level);
+        continue_poses.add(instructions.size());
         newIns(Operation.BR,0);
     }
     private void analyseReturn() throws CompileError{

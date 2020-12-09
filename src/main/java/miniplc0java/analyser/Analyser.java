@@ -419,7 +419,7 @@ public final class Analyser {
         for(int i=0;i<break_levels.size();i++){
             System.out.println(break_levels.get(i)+" "+break_poses.get(i));
             if(break_levels.get(i) > level){
-                instructions.get(break_poses.get(i)).setX(break_poses.get(i)-br_pos-1);
+                instructions.get(break_poses.get(i)).setX(instructions.size()-break_poses.get(i)-1);
                 break_levels.remove(i);
                 break_poses.remove(i);
                 i--;

@@ -326,6 +326,12 @@ public final class Analyser {
         // 建立函数的符号表
 
         //symboler.popAllLevel(0);
+        if(break_levels.size() > 0){
+            throw new AnalyzeError(ErrorCode.BreakError,startPos);
+        }
+        if(continue_levels.size() >0){
+            throw new AnalyzeError(ErrorCode.ContinueError,startPos);
+        }
     }
 
     /*

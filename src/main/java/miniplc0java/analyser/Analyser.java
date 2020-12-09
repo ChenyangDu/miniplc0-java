@@ -45,6 +45,7 @@ public final class Analyser {
     List<Integer> break_poses = new ArrayList<>();
     List<Integer> continue_levels = new ArrayList<>();
     List<Integer> continue_poses = new ArrayList<>();
+    int while_level = 0;
 
     public Analyser(Tokenizer tokenizer) {
         this.tokenizer = tokenizer;
@@ -411,6 +412,7 @@ public final class Analyser {
     }
 
     private void analyseWhile(int level) throws CompileError{
+        while_level++;
         expect(TokenType.WHILE_KW);
         int start = instructions.size();
         analyseExpr();
@@ -424,7 +426,7 @@ public final class Analyser {
         //break
         for(int i=0;i<break_levels.size();i++){
             System.out.println(break_levels.get(i)+" "+break_poses.get(i));
-            if(break_levels.get(i) > level){
+            if(break_levels.get(i) == while_level){
                 instructions.get(break_poses.get(i)).setX(instructions.size()-break_poses.get(i)-1);
                 break_levels.remove(i);
                 break_poses.remove(i);
@@ -434,25 +436,26 @@ public final class Analyser {
 
         //continue
         for(int i=0;i<continue_levels.size();i++){
-            if(continue_levels.get(i) > level){
+            if(continue_levels.get(i) == while_level){
+                System.out.println("continue "+level +" "+ continue_levels.get(i) );
                 instructions.get(continue_poses.get(i)).setX((start - continue_poses.get(i) - 1));
                 continue_levels.remove(i);
                 continue_poses.remove(i);
                 i--;
             }
         }
-
+        while_level--;
     }
 
     private void analyseBreak(int level)throws CompileError{
         expect(TokenType.BREAK_KW);
-        break_levels.add(level);
+        break_levels.add(while_level);
         break_poses.add(instructions.size());
         newIns(Operation.BR,0);
     }
     private void analyseContinue(int level)throws CompileError{
         expect(TokenType.CONTINUE_KW);
-        continue_levels.add(level);
+        continue_levels.add(while_level);
         continue_poses.add(instructions.size());
         newIns(Operation.BR,0);
     }

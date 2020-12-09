@@ -83,8 +83,7 @@ public class Symboler {
             SymbolEntry symbol = symbolTable.get(i);
             if(symbol.type != SymbolType.FUN_NAME &&
             symbol.isGlobal == symbolEntry.isGlobal &&
-            symbol.isParam == symbolEntry.isParam &&
-            symbol.level == symbolEntry.level)
+            symbol.isParam == symbolEntry.isParam)
                 res ++;
         }
         //System.out.println("get offset :"+symbolTable.size() +" "+ res);

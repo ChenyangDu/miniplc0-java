@@ -365,6 +365,8 @@ public final class Analyser {
         expect(TokenType.R_BRACE);
 
         // 作用域清空
+        System.out.println(level-1);
+        System.out.println(symboler);
         symboler.popAllLevel(level-1);
     }
 
@@ -685,6 +687,8 @@ public final class Analyser {
             expect(TokenType.R_PAREN);
         }else if(name.equals("putint")){
             expect(TokenType.L_PAREN);
+            System.out.println("putint");
+            System.out.println(symboler);
             analyseExpr();
             expect(TokenType.R_PAREN);
             newIns(Operation.PRINT_I);

@@ -211,6 +211,7 @@ public final class Analyser {
             analyseExpr();
             newIns(Operation.STORE64);
         }
+        if(level > 0)nowFunc.localSize++;
         expect(TokenType.SEMICOLON);
     }
 
@@ -230,6 +231,7 @@ public final class Analyser {
         pushVar(ident,false);
         analyseExpr();
         newIns(Operation.STORE64);
+        if(level > 0)nowFunc.localSize++;
         expect(TokenType.SEMICOLON);
     }
 
@@ -241,6 +243,7 @@ public final class Analyser {
         // 获取函数名字
         Functiondef funEntry = new Functiondef();
         nowFunc = funEntry;
+        nowFunc.localSize = 0;
         funEntry.name = (String)expect(TokenType.IDENT).getValue();
         expect(TokenType.L_PAREN);
 
@@ -312,7 +315,7 @@ public final class Analyser {
         }
 
         // 获取函数中需要的局部变量数量减掉自己占用的空间
-        funEntry.localSize = symboler.symbolTable.size() - oriSymSize-1;
+//        funEntry.localSize = symboler.symbolTable.size() - oriSymSize-1;
 
         // 建立函数的符号表
 
@@ -362,8 +365,6 @@ public final class Analyser {
         expect(TokenType.R_BRACE);
 
         // 作用域清空
-        System.out.println(symboler);
-        System.out.println(level);
         symboler.popAllLevel(level-1);
     }
 

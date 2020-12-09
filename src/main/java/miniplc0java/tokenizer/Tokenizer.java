@@ -112,7 +112,13 @@ public class Tokenizer {
 
             case '/':
                 it.nextChar();
-                // todo comment
+                if(it.peekChar() == '/'){
+                    it.nextChar();
+                    while(it.peekChar() != '\n'){
+                        it.nextChar();
+                    }
+                    return nextToken();
+                }
                 return new Token(TokenType.DIV, "/", it.previousPos(), it.currentPos());
 
             case '=':
@@ -184,23 +190,32 @@ public class Tokenizer {
             if(it.peekChar() == '\''){ // 连续两个 ‘
                 throw new TokenizeError(ErrorCode.InvalidInput,it.currentPos());
             }else if(it.peekChar() == '\\'){ // 遇到转义符
-                it.nextChar();
+                it.nextChar(); // 先读取 \
                 String value = "\\";
-                char ch = it.nextChar();
+                char ch = it.nextChar(); // 读取 \后面的字符
                 value += ch;
-                if("\\\"'nrt".indexOf(ch) == -1){
+                it.nextChar();
+                if(ch == '\\'){
+                    return new Token(TokenType.UINT_LITERAL,""+(int)'\\',startPos,it.currentPos());
+                }else if(ch == '"'){
+                    return new Token(TokenType.UINT_LITERAL,""+(int)'"',startPos,it.currentPos());
+                }else if(ch == '\''){
+                    return new Token(TokenType.UINT_LITERAL,""+(int)'\'',startPos,it.currentPos());
+                }else if(ch == 'n'){
+                    return new Token(TokenType.UINT_LITERAL,""+(int)'\n',startPos,it.currentPos());
+                }else if(ch == 'r'){
+                    return new Token(TokenType.UINT_LITERAL,""+(int)'\r',startPos,it.currentPos());
+                }else if(ch == 't'){
+                    return new Token(TokenType.UINT_LITERAL,""+(int)'\t',startPos,it.currentPos());
+                }else{
                     throw new TokenizeError(ErrorCode.InvalidInput,it.currentPos());
                 }
-                if(it.nextChar() != '\''){ // 不是 ' 结尾
-                    throw new TokenizeError(ErrorCode.InvalidInput,it.currentPos());
-                }
-                return new Token(TokenType.CHAR_LITERAL,value,startPos,it.currentPos());
             }else{ // 其他正常字符
-                String value = ""+it.nextChar();
+                String value = ""+ (int) it.nextChar();
                 if(it.nextChar() != '\''){ // 不是 ' 结尾
                     throw new TokenizeError(ErrorCode.InvalidInput,it.currentPos());
                 }
-                return new Token(TokenType.CHAR_LITERAL,value,startPos,it.currentPos());
+                return new Token(TokenType.UINT_LITERAL,value,startPos,it.currentPos());
             }
         }else{
             throw new TokenizeError(ErrorCode.InvalidInput,it.currentPos());

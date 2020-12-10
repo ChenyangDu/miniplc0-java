@@ -59,6 +59,17 @@ public class Tokenizer {
                 value += it.nextChar();
                 peek = it.peekChar();
             }
+            if(peek == 'e' || peek == 'E'){
+                value += it.nextChar();
+                peek = it.peekChar();
+                if(!Character.isDigit(peek)){
+                    throw new TokenizeError(ErrorCode.ExpectedToken,it.currentPos());
+                }
+                while(Character.isDigit(peek)){
+                    value += it.nextChar();
+                    peek = it.peekChar();
+                }
+            }
             return new Token(TokenType.DOUBLE_LITERAL,value,startPos,it.currentPos());
         }else{
             return new Token(TokenType.UINT_LITERAL,value,startPos,it.currentPos());

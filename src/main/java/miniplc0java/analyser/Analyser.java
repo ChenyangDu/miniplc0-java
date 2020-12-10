@@ -47,6 +47,9 @@ public final class Analyser {
     List<Integer> continue_poses = new ArrayList<>();
     int while_level = 0;
 
+    /** 当前是int还是double */
+    Stack<ExperType> experTypeStack = new Stack<>();
+
     public Analyser(Tokenizer tokenizer) {
         this.tokenizer = tokenizer;
         this.instructions = new ArrayList<>();
@@ -367,7 +370,7 @@ public final class Analyser {
             } else if(type == TokenType.L_BRACE){
                 analyseBlockStmt(level);
             } else if(type == TokenType.SEMICOLON){
-                // todo 这咋整？
+
                 next();
             } else if(type == TokenType.R_BRACE) {
                 break;
@@ -481,10 +484,7 @@ public final class Analyser {
             throw new AnalyzeError(ErrorCode.InvalidInput,peekedToken.getStartPos());
         }
         analyseExprCmp();
-//        while (nextIf(TokenType.ASSIGN) != null){
-//            analyseExprCmp();
-//            // todo
-//        }
+
         check(TokenType.SEMICOLON);
     }
 
@@ -543,12 +543,26 @@ public final class Analyser {
         while (type == TokenType.PLUS || type == TokenType.MINUS){
             Token op = next();
             analyseExprMD();
-            //todo double
-            if(op.getTokenType() == TokenType.PLUS) {
-                newIns(Operation.ADD_I);
-            }else{
-                newIns(Operation.SUB_I);
+
+            ExperType first = experTypeStack.pop();
+            ExperType second = experTypeStack.pop();
+            if(first != second){
+                System.out.println(experTypeStack);
+                throw new AnalyzeError(ErrorCode.TypeError,peek().getStartPos());
             }
+
+            if(op.getTokenType() == TokenType.PLUS) {
+                if(first == ExperType.INT)
+                    newIns(Operation.ADD_I);
+                else
+                    newIns(Operation.ADD_F);
+            }else{
+                if(first == ExperType.INT)
+                    newIns(Operation.SUB_I);
+                else
+                    newIns(Operation.SUB_F);
+            }
+
             type = peek().getTokenType();
         }
     }
@@ -559,11 +573,22 @@ public final class Analyser {
         while (type == TokenType.MUL || type == TokenType.DIV){
             next();
             analyseExprAS();
-            // todo double
+
+            ExperType first = experTypeStack.pop();
+            ExperType second = experTypeStack.pop();
+            if(first != second){
+                throw new AnalyzeError(ErrorCode.TypeError,peek().getStartPos());
+            }
             if(type == TokenType.MUL){
-                newIns(Operation.MUL_I);
+                if(first == ExperType.INT)
+                    newIns(Operation.MUL_I);
+                else
+                    newIns(Operation.MUL_F);
             }else{
-                newIns(Operation.DIV_I);
+                if(first == ExperType.INT)
+                    newIns(Operation.DIV_I);
+                else
+                    newIns(Operation.DIV_F);
             }
             type = peek().getTokenType();
         }
@@ -571,9 +596,23 @@ public final class Analyser {
 
     private void analyseExprAS() throws CompileError{
         analyseExprSign();
-        while (peek().getTokenType() == TokenType.AS_KW){
-            next();
-            // todo double
+        while (nextIf(TokenType.AS_KW) != null){
+            String type = next().getValueString();
+            if(type.equals("int")){
+                if(experTypeStack.peek() == ExperType.DOUBLE){ // double to int
+                    newIns(Operation.FTOI);
+                    experTypeStack.pop();
+                    experTypeStack.push(ExperType.INT);
+                }
+                // int to int忽略
+            }
+            if(type.equals("double")){
+                if(experTypeStack.peek() == ExperType.INT){ // int to double
+                    newIns(Operation.ITOF);
+                    experTypeStack.pop();
+                    experTypeStack.push(ExperType.DOUBLE);
+                }
+            }
             analyseExprSign();
         }
     }
@@ -582,7 +621,6 @@ public final class Analyser {
         TokenType type = peek().getTokenType();
         int minusCnt = 0;
         while(type == TokenType.MINUS){
-            //todo double
             next();
             minusCnt++;
             newIns(Operation.PUSH,0);
@@ -590,9 +628,11 @@ public final class Analyser {
         }
         analyseExprItem();
         while ((minusCnt--) !=0){
-            newIns(Operation.SUB_I);
+            if(experTypeStack.peek() == ExperType.INT)
+                newIns(Operation.SUB_I);
+            else
+                newIns(Operation.SUB_F);
         }
-
     }
 
     private void analyseExprItem() throws CompileError{
@@ -622,11 +662,13 @@ public final class Analyser {
     private void pushUint(Token token) throws CompileError {
         expect(TokenType.UINT_LITERAL);
         newIns(Operation.PUSH,Long.parseLong((String)token.getValue()));
+        experTypeStack.push(ExperType.INT);
     }
-    private void pushDouble(Token token) throws TokenizeError {
-        next();
-        //todo
-        System.out.println("push "+token.getValue());
+    private void pushDouble(Token token) throws CompileError {
+        expect(TokenType.DOUBLE_LITERAL);
+        double dou = Double.parseDouble((String)token.getValue());
+        newIns(Operation.PUSH,Double.doubleToRawLongBits(dou));
+        experTypeStack.push(ExperType.DOUBLE);
     }
     private void pushFun(Token token) throws CompileError{
         String name = (String)token.getValue();
@@ -783,188 +825,4 @@ public final class Analyser {
     private void newIns(Operation opt){
         instructions.add(new Instruction(opt));
     }
-//
-//
-//    /**
-//     * 常表达式 -> 符号? 无符号整数
-//     * @throws CompileError
-//     */
-//    private int analyseConstantExpression() throws CompileError {
-//        boolean negative = false;
-//        if (nextIf(TokenType.Plus) != null) {
-//            negative = false;
-//        } else if (nextIf(TokenType.Minus) != null) {
-//            negative = true;
-//        }
-//
-//        var token = expect(TokenType.Uint);
-//
-//        int value = (int) token.getValue();
-//        if (negative) {
-//            value = -value;
-//        }
-//
-//        return value;
-//    }
-//
-//    /**
-//     * 赋值语句 -> 标识符 '=' 表达式 ';'
-//     * @throws CompileError
-//     */
-//    private void analyseAssignmentStatement() throws CompileError {
-//        // 分析这个语句
-//
-//        // 标识符
-//        Token ident = expect(TokenType.Ident);
-//        String name = (String)ident.getValue();
-//        SymbolEntry symbol = symbolTable.get(name);
-//        if (symbol == null) {
-//            // 没有这个标识符
-//            throw new AnalyzeError(ErrorCode.NotDeclared, /* 当前位置 */ null);
-//        } else if (symbol.isConstant) {
-//            // 标识符是常量
-//            throw new AnalyzeError(ErrorCode.AssignToConstant, /* 当前位置 */ null);
-//        }
-//
-//        // 标识符是变量
-//
-//        expect(TokenType.Equal);
-//
-//        // 计算表达式的值
-//        analyseExpression();
-//
-//        expect(TokenType.Semicolon);
-//
-//        // 设置符号已初始化
-//        initializeSymbol(name, null);
-//
-//        // 把结果保存
-//        var offset = getOffset(name, null);
-//        newIns(Operation.STO, offset));
-//    }
-//
-//    private void analysePrint() throws CompileError {
-//        // 输出语句 -> 'print' '(' 表达式 ')' ';'
-//
-//        expect(TokenType.Print);
-//        expect(TokenType.LParen);
-//
-//        analyseExpression();
-//
-//        expect(TokenType.RParen);
-//        expect(TokenType.Semicolon);
-//
-//        newIns(Operation.WRT));
-//    }
-//
-//    /**
-//     * 表达式 -> 项 (加法运算符 项)*
-//     * @throws CompileError
-//     */
-//    private void analyseExpression() throws CompileError {
-//        // 项
-//        analyseItem();
-//
-//        while (true) {
-//            // 预读可能是运算符的 token
-//            var op = peek();
-//            if (op.getTokenType() != TokenType.Plus && op.getTokenType() != TokenType.Minus) {
-//                break;
-//            }
-//
-//            // 运算符
-//            next();
-//
-//            // 项
-//            analyseItem();
-//
-//            // 生成代码
-//            if (op.getTokenType() == TokenType.Plus) {
-//                newIns(Operation.ADD));
-//            } else if (op.getTokenType() == TokenType.Minus) {
-//                newIns(Operation.SUB));
-//            }
-//        }
-//    }
-//
-//    /**
-//     * 项 -> 因子 (乘法运算符 因子)*
-//     * @throws CompileError
-//     */
-//    private void analyseItem() throws CompileError {
-//
-//        // 因子
-//        analyseFactor();
-//
-//        while (true) {
-//            // 预读可能是运算符的 token
-//            Token op = peek();
-//            if (op.getTokenType() != TokenType.Mult && op.getTokenType() != TokenType.Div) {
-//                break;
-//            }
-//
-//            // 运算符
-//            next();
-//            // 因子
-//            analyseFactor();
-//
-//            // 生成代码
-//            if (op.getTokenType() == TokenType.Mult) {
-//                newIns(Operation.MUL));
-//            } else if (op.getTokenType() == TokenType.Div) {
-//                newIns(Operation.DIV));
-//            }
-//        }
-//    }
-//
-//    /**
-//     * 因子 -> 符号? (标识符 | 无符号整数 | '(' 表达式 ')')
-//     * @throws CompileError
-//     */
-//    private void analyseFactor() throws CompileError {
-//
-//        boolean negate;
-//        if (nextIf(TokenType.Minus) != null) {
-//            negate = true;
-//            // 计算结果需要被 0 减
-//            newIns(Operation.LIT, 0));
-//        } else {
-//            nextIf(TokenType.Plus);
-//            negate = false;
-//        }
-//
-//        if (check(TokenType.Ident)) {
-//            // 是标识符
-//
-//            // 加载标识符的值
-//            String name = (String) next().getValue();
-//            var symbol = symbolTable.get(name);
-//            if (symbol == null) {
-//                // 没有这个标识符
-//                throw new AnalyzeError(ErrorCode.NotDeclared, /* 当前位置 */ null);
-//            } else if (!symbol.isInitialized) {
-//                // 标识符没初始化
-//                throw new AnalyzeError(ErrorCode.NotInitialized, /* 当前位置 */ null);
-//            }
-//            var offset = getOffset(name, null);
-//            newIns(Operation.LOD, offset));
-//        } else if (check(TokenType.Uint)) {
-//            // 是整数
-//            // 载整数值
-//            int value = (int)next().getValue();
-//            newIns(Operation.LIT, value));
-//        } else if (check(TokenType.LParen)) {
-//            // 是表达式
-//            next();
-//            analyseExpression();
-//            expect(TokenType.RParen);
-//        } else {
-//            // 都不是，摸了
-//            throw new ExpectedTokenError(List.of(TokenType.Ident, TokenType.Uint, TokenType.LParen), next());
-//        }
-//
-//        if (negate) {
-//            newIns(Operation.SUB));
-//        }
-//    }
 }

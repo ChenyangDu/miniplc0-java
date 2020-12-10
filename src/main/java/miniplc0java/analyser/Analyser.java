@@ -743,6 +743,11 @@ public final class Analyser {
         }
         if(needToLoad){
             newIns(Operation.LOAD64);
+            if(symbol.type == SymbolType.INT_NAME){
+                experTypeStack.push(ExperType.INT);
+            }else{
+                experTypeStack.push(ExperType.DOUBLE);
+            }
         }
     }
 

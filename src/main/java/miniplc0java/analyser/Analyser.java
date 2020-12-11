@@ -221,6 +221,11 @@ public final class Analyser {
             analyseExpr();
             newIns(Operation.STORE64);
         }
+        ExperType experType = experTypeStack.pop();
+        if(symbolType == SymbolType.INT_NAME && experType != ExperType.INT ||
+        symbolType == SymbolType.DOUBLE_NAME && experType != ExperType.DOUBLE){
+            throw new AnalyzeError(ErrorCode.TypeError,ident.getStartPos());
+        }
         if(level > 0)nowFunc.localSize++;
         expect(TokenType.SEMICOLON);
     }
@@ -802,17 +807,24 @@ public final class Analyser {
             expect(TokenType.L_PAREN);
             expect(TokenType.R_PAREN);
             newIns(Operation.SCAN_I);
+        }else if(name.equals("getdouble")){
+            expect(TokenType.L_PAREN);
+            expect(TokenType.R_PAREN);
+            newIns(Operation.SCAN_F);
         }else if(name.equals("getchar")){
             expect(TokenType.L_PAREN);
             newIns(Operation.SCAN_C);
             expect(TokenType.R_PAREN);
         }else if(name.equals("putint")){
             expect(TokenType.L_PAREN);
-            System.out.println("putint");
-            System.out.println(symboler);
             analyseExpr();
             expect(TokenType.R_PAREN);
             newIns(Operation.PRINT_I);
+        }else if(name.equals("putdouble")){
+            expect(TokenType.L_PAREN);
+            analyseExpr();
+            expect(TokenType.R_PAREN);
+            newIns(Operation.PRINT_F);
         }else if(name.equals("putstr")){
             expect(TokenType.L_PAREN);
 

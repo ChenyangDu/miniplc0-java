@@ -190,7 +190,9 @@ public final class Analyser {
         functiondef.returnSize = 0;
         functiondef.params = new ArrayList<>();
         functiondef.localSize = 0;
-
+        for(int i=0;i<instructions.size();i++){
+            functiondef.instructions.add(instructions.get(i));
+        }
         functiondef.bodySize = instructions.size(); //(length+7)/8;
         while(instructions.size() > 0){
             instructions.remove(0);

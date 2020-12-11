@@ -190,11 +190,7 @@ public final class Analyser {
         functiondef.returnSize = 0;
         functiondef.params = new ArrayList<>();
         functiondef.localSize = 0;
-        int length = 0;
-        for(int i=0;i<instructions.size();i++){
-            functiondef.instructions.add(instructions.get(i));
-            length += instructions.get(i).toByteString().length()/2;
-        }
+
         functiondef.bodySize = instructions.size(); //(length+7)/8;
         while(instructions.size() > 0){
             instructions.remove(0);
@@ -220,12 +216,15 @@ public final class Analyser {
             pushVar(ident,false);
             analyseExpr();
             newIns(Operation.STORE64);
+
+            ExperType experType = experTypeStack.pop();
+            if(symbolType == SymbolType.INT_NAME && experType != ExperType.INT ||
+                    symbolType == SymbolType.DOUBLE_NAME && experType != ExperType.DOUBLE){
+                throw new AnalyzeError(ErrorCode.TypeError,ident.getStartPos());
+            }
+
         }
-        ExperType experType = experTypeStack.pop();
-        if(symbolType == SymbolType.INT_NAME && experType != ExperType.INT ||
-        symbolType == SymbolType.DOUBLE_NAME && experType != ExperType.DOUBLE){
-            throw new AnalyzeError(ErrorCode.TypeError,ident.getStartPos());
-        }
+
         if(level > 0)nowFunc.localSize++;
         expect(TokenType.SEMICOLON);
     }
@@ -246,6 +245,14 @@ public final class Analyser {
         pushVar(ident,false);
         analyseExpr();
         newIns(Operation.STORE64);
+
+        ExperType experType = experTypeStack.pop();
+        if(symbolType == SymbolType.INT_NAME && experType != ExperType.INT ||
+                symbolType == SymbolType.DOUBLE_NAME && experType != ExperType.DOUBLE){
+            throw new AnalyzeError(ErrorCode.TypeError,ident.getStartPos());
+        }
+
+
         if(level > 0)nowFunc.localSize++;
         expect(TokenType.SEMICOLON);
     }
@@ -323,12 +330,20 @@ public final class Analyser {
         funEntry.id = symbol.stackOffset;
         program.addFunc(funEntry);
 
+        funEntry.canReturn = false;
 
         // 分析函数主体
-        analyseBlockStmt(0);
+        analyseBlockStmt(0,true);
 
-        // 最后加上return
-        newIns(Operation.RET);
+        // 检查返回路径
+        if(!funEntry.canReturn){
+            if(funEntry.returnSize == 1){
+                throw new AnalyzeError(ErrorCode.ReturnError,startPos);
+            }else if(funEntry.returnSize == 0){
+                // 最后加上return
+                newIns(Operation.RET);
+            }
+        }
 
         // 获取函数中新增的指令数量
         int length = 0;
@@ -368,7 +383,7 @@ public final class Analyser {
     | empty_stmt ;
 
      */
-    private void analyseBlockStmt(int level) throws CompileError{
+    private void analyseBlockStmt(int level,boolean canExec) throws CompileError{
         level ++;
         expect(TokenType.L_BRACE);
         while(true){
@@ -379,13 +394,16 @@ public final class Analyser {
             } else if (type == TokenType.LET_KW) {
                 analyseDeclLetStmt(level);
             } else if (type == TokenType.IF_KW) {
-                analyseIfStmt(level);
+                analyseIfStmt(level,canExec);
             } else if(type == TokenType.WHILE_KW){
                 analyseWhile(level);
             } else if(type == TokenType.RETURN_KW){
                 analyseReturn();
+                if(canExec){
+                    nowFunc.canReturn = true;
+                }
             } else if(type == TokenType.L_BRACE){
-                analyseBlockStmt(level);
+                analyseBlockStmt(level,canExec);
             } else if(type == TokenType.SEMICOLON){
 
                 next();
@@ -401,29 +419,27 @@ public final class Analyser {
         }
         expect(TokenType.R_BRACE);
 
-//        // 作用域清空
-//        System.out.println(level-1);
-//        System.out.println(symboler);
+        // 作用域清空
         symboler.popAllLevel(level-1);
-//        System.out.println(symboler);
+
     }
 
 
-    private void analyseIfStmt(int level) throws CompileError{
+    private void analyseIfStmt(int level,boolean canExec) throws CompileError{
         expect(TokenType.IF_KW);
         analyseExpr();
         int br_false_pos,br_pos;
         br_false_pos = instructions.size();
         newIns(Operation.BR_FALSE);
-        analyseBlockStmt(level);
+        analyseBlockStmt(level,false);// if后面的肯定不能保证执行
         br_pos = instructions.size();
         if(nextIf(TokenType.ELSE_KW) != null){
             newIns(Operation.BR);
             instructions.get(br_false_pos).setX(br_pos - br_false_pos);
             if(check(TokenType.IF_KW)){ // else if
-                analyseIfStmt(level);
+                analyseIfStmt(level,false); // else if 后面也不一定执行
             }else{
-                analyseBlockStmt(level); // else
+                analyseBlockStmt(level,canExec); // else
             }
             instructions.get(br_pos).setX(instructions.size() - br_pos-1);
         }else{
@@ -438,7 +454,7 @@ public final class Analyser {
         analyseExpr();
         int br_pos = instructions.size();
         newIns(Operation.BR_FALSE);
-        analyseBlockStmt(level);
+        analyseBlockStmt(level,false);
         newIns(Operation.BR,(start - instructions.size() - 1));
 
         instructions.get(br_pos).setX(instructions.size() - br_pos-1);

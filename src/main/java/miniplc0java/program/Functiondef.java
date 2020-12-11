@@ -15,6 +15,7 @@ public class Functiondef {
     public List<SymbolEntry> params = new ArrayList<>();
     public int returnSize;
     public ExperType returnType;
+    public boolean canReturn;
     public int localSize;
     public int bodySize;
     public ArrayList<Instruction> instructions = new ArrayList<>();

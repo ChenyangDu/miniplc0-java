@@ -546,34 +546,51 @@ public final class Analyser {
             analyseExprPM();
             switch (type) {
                 case GT -> {
-                    newIns(Operation.CMP_I);
+                    newInsCmpIF();
                     newIns(Operation.SET_GT);
                 }
                 case LT -> {
-                    newIns(Operation.CMP_I);
+                    newInsCmpIF();
                     newIns(Operation.SET_LT);
                 }
                 case GE -> {
-                    newIns(Operation.CMP_I);
+                    newInsCmpIF();
                     newIns(Operation.SET_LT);
                     newIns(Operation.NOT);
                 }
                 case LE -> {
-                    newIns(Operation.CMP_I);
+                    newInsCmpIF();
                     newIns(Operation.SET_GT);
                     newIns(Operation.NOT);
                 }
                 case EQ -> {
-                    newIns(Operation.CMP_I);
+                    newInsCmpIF();
                     newIns(Operation.NOT);
                 }
                 case NEQ -> {
-                    newIns(Operation.CMP_I);
+                    newInsCmpIF();
                     newIns(Operation.NOT);
                     newIns(Operation.NOT);
                 }
             }
         }
+    }
+
+    private ExperType getNowExperType() throws TokenizeError, AnalyzeError {
+        ExperType first = experTypeStack.pop();
+        ExperType second = experTypeStack.pop();
+        if(first != second){
+            throw new AnalyzeError(ErrorCode.TypeError,peek().getStartPos());
+        }
+        return first;
+    }
+
+    private void newInsCmpIF() throws TokenizeError, AnalyzeError {
+        ExperType nowType = getNowExperType();
+        if(nowType == ExperType.INT)
+            newIns(Operation.CMP_I);
+        else
+            newIns(Operation.CMP_F);
     }
 
     private void analyseExprPM() throws CompileError{
@@ -583,27 +600,21 @@ public final class Analyser {
             Token op = next();
             analyseExprMD();
 
-            System.out.println(op.getStartPos());
-            ExperType first = experTypeStack.pop();
-            ExperType second = experTypeStack.pop();
-            if(first != second){
-                System.out.println(experTypeStack);
-                throw new AnalyzeError(ErrorCode.TypeError,op.getStartPos());
-            }
+            ExperType nowExperType = getNowExperType();
 
-            if(first == ExperType.INT){
+            if(nowExperType == ExperType.INT){
                 experTypeStack.push(ExperType.INT);
             }else{
                 experTypeStack.push(ExperType.DOUBLE);
             }
 
             if(op.getTokenType() == TokenType.PLUS) {
-                if(first == ExperType.INT)
+                if(nowExperType == ExperType.INT)
                     newIns(Operation.ADD_I);
                 else
                     newIns(Operation.ADD_F);
             }else{
-                if(first == ExperType.INT)
+                if(nowExperType == ExperType.INT)
                     newIns(Operation.SUB_I);
                 else
                     newIns(Operation.SUB_F);
@@ -620,26 +631,21 @@ public final class Analyser {
             next();
             analyseExprAS();
 
-            ExperType first = experTypeStack.pop();
-            ExperType second = experTypeStack.pop();
-            if(first != second){
-                throw new AnalyzeError(ErrorCode.TypeError,peek().getStartPos());
-            }
+            ExperType nowExperType = getNowExperType();
 
-            if(first == ExperType.INT){
+            if(nowExperType == ExperType.INT){
                 experTypeStack.push(ExperType.INT);
             }else{
                 experTypeStack.push(ExperType.DOUBLE);
             }
 
-
             if(type == TokenType.MUL){
-                if(first == ExperType.INT)
+                if(nowExperType == ExperType.INT)
                     newIns(Operation.MUL_I);
                 else
                     newIns(Operation.MUL_F);
             }else{
-                if(first == ExperType.INT)
+                if(nowExperType == ExperType.INT)
                     newIns(Operation.DIV_I);
                 else
                     newIns(Operation.DIV_F);

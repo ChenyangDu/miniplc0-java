@@ -43,51 +43,6 @@ public enum TokenType {
     COLON   ,//  -> ':'
     SEMICOLON ,//-> ';'
 
-    // 注释
-    COMMENT,
+    EOF
 
-    EOF;
-
-
-    /*@Override
-    public String toString() {
-        switch (this) {
-            case None:
-                return "NullToken";
-            case Begin:
-                return "Begin";
-            case Const:
-                return "Const";
-            case Div:
-                return "DivisionSign";
-            case EOF:
-                return "EOF";
-            case End:
-                return "End";
-            case Equal:
-                return "EqualSign";
-            case Ident:
-                return "Identifier";
-            case LParen:
-                return "LeftBracket";
-            case Minus:
-                return "MinusSign";
-            case Mult:
-                return "MultiplicationSign";
-            case Plus:
-                return "PlusSign";
-            case Print:
-                return "Print";
-            case RParen:
-                return "RightBracket";
-            case Semicolon:
-                return "Semicolon";
-            case Uint:
-                return "UnsignedInteger";
-            case Var:
-                return "Var";
-            default:
-                return "InvalidToken";
-        }
-    }*/
 }

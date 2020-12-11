@@ -34,12 +34,6 @@ public final class Analyser {
     /** 当前正在分析的函数 */
     Functiondef nowFunc = null;
 
-    /** 算符优先文法的栈 */
-    List<TokenType> opStack = new ArrayList<>();
-
-    /** 下一个变量的栈偏移 */
-    int nextOffset = 0;
-
     /** break 和 continue */
     List<Integer> break_levels = new ArrayList<>();
     List<Integer> break_poses = new ArrayList<>();
@@ -68,8 +62,6 @@ public final class Analyser {
     /**
      * 查看下一个 Token
      *
-     * @return
-     * @throws TokenizeError
      */
     private Token peek() throws TokenizeError {
         if (peekedToken == null) {
@@ -81,8 +73,6 @@ public final class Analyser {
     /**
      * 获取下一个 Token
      *
-     * @return
-     * @throws TokenizeError
      */
     private Token next() throws TokenizeError {
         if (peekedToken != null) {
@@ -97,9 +87,6 @@ public final class Analyser {
     /**
      * 如果下一个 token 的类型是 tt，则返回 true
      *
-     * @param tt
-     * @return
-     * @throws TokenizeError
      */
     private boolean check(TokenType tt) throws TokenizeError {
         var token = peek();
@@ -109,9 +96,6 @@ public final class Analyser {
     /**
      * 如果下一个 token 的类型是 tt，则前进一个 token 并返回这个 token
      *
-     * @param tt 类型
-     * @return 如果匹配则返回这个 token，否则返回 null
-     * @throws TokenizeError
      */
     private Token nextIf(TokenType tt) throws TokenizeError {
         var token = peek();
@@ -125,9 +109,6 @@ public final class Analyser {
     /**
      * 如果下一个 token 的类型是 tt，则前进一个 token 并返回，否则抛出异常
      *
-     * @param tt 类型
-     * @return 这个 token
-     * @throws CompileError 如果类型不匹配
      */
     private Token expect(TokenType tt) throws CompileError {
         var token = peek();
@@ -190,19 +171,19 @@ public final class Analyser {
         functiondef.returnSize = 0;
         functiondef.params = new ArrayList<>();
         functiondef.localSize = 0;
-        for(int i=0;i<instructions.size();i++){
-            functiondef.instructions.add(instructions.get(i));
-        }
+        functiondef.instructions.addAll(instructions);
         functiondef.bodySize = instructions.size(); //(length+7)/8;
         while(instructions.size() > 0){
             instructions.remove(0);
         }
         program.functiondefList.add(0,functiondef);
-        SymbolEntry symbolEntry = symboler.findSymbol(functiondef.name);
     }
 
-    private void analyseDeclLetStmt(int level) throws CompileError{
-        expect(TokenType.LET_KW);
+    private void analyseDeclStmt(int level,boolean isConst) throws CompileError{
+        if(isConst)
+            expect(TokenType.CONST_KW);
+        else
+            expect(TokenType.LET_KW);
         Token ident = expect(TokenType.IDENT);
         String name = (String)ident.getValue();
         expect(TokenType.COLON);
@@ -212,8 +193,11 @@ public final class Analyser {
         if(symbolType == SymbolType.VOID_NAME){
             throw new AnalyzeError(ErrorCode.TypeError,type.getStartPos());
         }
-        symboler.addSymbol(name,tokenToSymbolType(type),false,false,level,
+        symboler.addSymbol(name,tokenToSymbolType(type),isConst,false,level,
                 level==0,false,ident.getStartPos());
+        if(isConst && peek().getTokenType() != TokenType.ASSIGN){
+            throw new AnalyzeError(ErrorCode.InvalidInput,ident.getStartPos());
+        }
         if(nextIf(TokenType.ASSIGN) != null){
             pushVar(ident,false);
             analyseExpr();
@@ -224,39 +208,17 @@ public final class Analyser {
                     symbolType == SymbolType.DOUBLE_NAME && experType != ExperType.DOUBLE){
                 throw new AnalyzeError(ErrorCode.TypeError,ident.getStartPos());
             }
-
         }
-
         if(level > 0)nowFunc.localSize++;
         expect(TokenType.SEMICOLON);
     }
 
+    private void analyseDeclLetStmt(int level) throws CompileError{
+        analyseDeclStmt(level,false);
+    }
+
     private void analyseDeclConstStmt(int level) throws CompileError{
-        expect(TokenType.CONST_KW);
-        Token ident = expect(TokenType.IDENT);
-        String name = (String)ident.getValue();
-        expect(TokenType.COLON);
-        Token type = expect(TokenType.IDENT);
-        SymbolType symbolType = tokenToSymbolType(type);
-        if(symbolType == SymbolType.VOID_NAME){
-            throw new AnalyzeError(ErrorCode.TypeError,type.getStartPos());
-        }
-        symboler.addSymbol(name,tokenToSymbolType(type),true,false,level,
-                level==0,false,ident.getStartPos());
-        expect(TokenType.ASSIGN);
-        pushVar(ident,false);
-        analyseExpr();
-        newIns(Operation.STORE64);
-
-        ExperType experType = experTypeStack.pop();
-        if(symbolType == SymbolType.INT_NAME && experType != ExperType.INT ||
-                symbolType == SymbolType.DOUBLE_NAME && experType != ExperType.DOUBLE){
-            throw new AnalyzeError(ErrorCode.TypeError,ident.getStartPos());
-        }
-
-
-        if(level > 0)nowFunc.localSize++;
-        expect(TokenType.SEMICOLON);
+        analyseDeclStmt(level,true);
     }
 
     private void anslyseFn() throws CompileError{
@@ -322,7 +284,6 @@ public final class Analyser {
 
         // 获取函数的总长度
         int oriSize = instructions.size();
-        int oriSymSize = symboler.symbolTable.size();
 
         // 解决递归问题，提前加入符号表和函数列表
 
@@ -348,10 +309,8 @@ public final class Analyser {
         }
 
         // 获取函数中新增的指令数量
-        int length = 0;
         for(int i=oriSize;i<instructions.size();i++){
             funEntry.instructions.add(instructions.get(i));
-            length += instructions.get(i).toByteString().length()/2;
         }
         funEntry.bodySize = instructions.size() - oriSize; //(length+7)/8;
         while(instructions.size() > oriSize){
@@ -412,9 +371,9 @@ public final class Analyser {
             } else if(type == TokenType.R_BRACE) {
                 break;
             } else if(type == TokenType.BREAK_KW) {
-                analyseBreak(level);
+                analyseBreak();
             } else if(type == TokenType.CONTINUE_KW) {
-                analyseContinue(level);
+                analyseContinue();
             }else{
                 analyseExpr();
             }
@@ -485,13 +444,13 @@ public final class Analyser {
         while_level--;
     }
 
-    private void analyseBreak(int level)throws CompileError{
+    private void analyseBreak()throws CompileError{
         expect(TokenType.BREAK_KW);
         break_levels.add(while_level);
         break_poses.add(instructions.size());
         newIns(Operation.BR,0);
     }
-    private void analyseContinue(int level)throws CompileError{
+    private void analyseContinue()throws CompileError{
         expect(TokenType.CONTINUE_KW);
         continue_levels.add(while_level);
         continue_poses.add(instructions.size());
@@ -721,13 +680,13 @@ public final class Analyser {
     }
     private void pushUint(Token token) throws CompileError {
         expect(TokenType.UINT_LITERAL);
-        newIns(Operation.PUSH,Long.parseLong((String)token.getValue()));
+        newIns(Long.parseLong((String)token.getValue()));
         experTypeStack.push(ExperType.INT);
     }
     private void pushDouble(Token token) throws CompileError {
         expect(TokenType.DOUBLE_LITERAL);
         double dou = Double.parseDouble((String)token.getValue());
-        newIns(Operation.PUSH,Double.doubleToRawLongBits(dou));
+        newIns(Double.doubleToRawLongBits(dou));
         experTypeStack.push(ExperType.DOUBLE);
     }
     private void pushFun(Token token) throws CompileError{
@@ -825,12 +784,13 @@ public final class Analyser {
 
     private SymbolType tokenToSymbolType(Token token) throws CompileError{
         String tokenName = (String)token.getValue();
-        if(tokenName.equals("int")){
-            return SymbolType.INT_NAME;
-        }else if(tokenName.equals("double")){
-            return SymbolType.DOUBLE_NAME;
-        }else if(tokenName.equals("void")){
-            return SymbolType.VOID_NAME;
+        switch (tokenName) {
+            case "int":
+                return SymbolType.INT_NAME;
+            case "double":
+                return SymbolType.DOUBLE_NAME;
+            case "void":
+                return SymbolType.VOID_NAME;
         }
         throw new AnalyzeError(ErrorCode.InvalidInput,token.getStartPos());
     }
@@ -846,59 +806,66 @@ public final class Analyser {
     }
     private void pushStd(String name) throws CompileError {
         expect(TokenType.IDENT);
-        if(name.equals("getint")){
-            expect(TokenType.L_PAREN);
-            expect(TokenType.R_PAREN);
-            newIns(Operation.SCAN_I);
-        }else if(name.equals("getdouble")){
-            expect(TokenType.L_PAREN);
-            expect(TokenType.R_PAREN);
-            newIns(Operation.SCAN_F);
-        }else if(name.equals("getchar")){
-            expect(TokenType.L_PAREN);
-            newIns(Operation.SCAN_C);
-            expect(TokenType.R_PAREN);
-        }else if(name.equals("putint")){
-            expect(TokenType.L_PAREN);
-            analyseExpr();
-            expect(TokenType.R_PAREN);
-            newIns(Operation.PRINT_I);
-        }else if(name.equals("putdouble")){
-            expect(TokenType.L_PAREN);
-            analyseExpr();
-            expect(TokenType.R_PAREN);
-            newIns(Operation.PRINT_F);
-        }else if(name.equals("putstr")){
-            expect(TokenType.L_PAREN);
-
-            if(peek().getTokenType() != TokenType.STRING_LITERAL){
-                throw new AnalyzeError(ErrorCode.InvalidInput,peekedToken.getStartPos());
+        switch (name) {
+            case "getint" -> {
+                expect(TokenType.L_PAREN);
+                expect(TokenType.R_PAREN);
+                newIns(Operation.SCAN_I);
             }
-            String str = (String) peek().getValue();
-            analyseExprItem();
-            for(int i=0;i<str.length();i++){
+            case "getdouble" -> {
+                expect(TokenType.L_PAREN);
+                expect(TokenType.R_PAREN);
+                newIns(Operation.SCAN_F);
+            }
+            case "getchar" -> {
+                expect(TokenType.L_PAREN);
+                newIns(Operation.SCAN_C);
+                expect(TokenType.R_PAREN);
+            }
+            case "putint" -> {
+                expect(TokenType.L_PAREN);
+                analyseExpr();
+                expect(TokenType.R_PAREN);
+                newIns(Operation.PRINT_I);
+            }
+            case "putdouble" -> {
+                expect(TokenType.L_PAREN);
+                analyseExpr();
+                expect(TokenType.R_PAREN);
+                newIns(Operation.PRINT_F);
+            }
+            case "putstr" -> {
+                expect(TokenType.L_PAREN);
+                if (peek().getTokenType() != TokenType.STRING_LITERAL) {
+                    throw new AnalyzeError(ErrorCode.InvalidInput, peekedToken.getStartPos());
+                }
+                String str = (String) peek().getValue();
+                analyseExprItem();
+                for (int i = 0; i < str.length(); i++) {
+                    newIns(Operation.PRINT_C);
+                }
+                expect(TokenType.R_PAREN);
+            }
+            case "putchar" -> {
+                expect(TokenType.L_PAREN);
+                analyseExpr();
                 newIns(Operation.PRINT_C);
+                expect(TokenType.R_PAREN);
             }
-
-            expect(TokenType.R_PAREN);
-        }else if(name.equals("putchar")){
-            expect(TokenType.L_PAREN);
-            analyseExpr();
-            newIns(Operation.PRINT_C);
-            expect(TokenType.R_PAREN);
-        }else if(name.equals("putln")){
-            expect(TokenType.L_PAREN);
-            newIns(Operation.PUSH,(int)'\n');
-            newIns(Operation.PRINT_C);
-            expect(TokenType.R_PAREN);
+            case "putln" -> {
+                expect(TokenType.L_PAREN);
+                newIns(Operation.PUSH, (int) '\n');
+                newIns(Operation.PRINT_C);
+                expect(TokenType.R_PAREN);
+            }
         }
     }
     
     private void newIns(Operation opt, Integer x){
         instructions.add(new Instruction(opt,(long)x));
     }
-    private void newIns(Operation opt, Long x){
-        instructions.add(new Instruction(opt,(long)x));
+    private void newIns(Long x){
+        instructions.add(new Instruction(Operation.PUSH, x));
     }
     private void newIns(Operation opt){
         instructions.add(new Instruction(opt));

@@ -22,17 +22,17 @@ public class Functiondef {
 
     @Override
     public String toString() {
-        String res = "\n\tname='" + name + '\'' +
+        StringBuilder res = new StringBuilder("\n\tname='" + name + '\'' +
                 "\tnameid=" + name_id +
                 "\treturnSize=" + returnSize +
                 "\tparams=" + params.size() +
                 "\tlocalSize=" + localSize +
                 "\tbodySize=" + bodySize +
-                "\tid="+id+"\n";
+                "\tid=" + id + "\n");
         for (Instruction ins : instructions) {
-            res += "\t\t"+ins.toString();
+            res.append("\t\t").append(ins.toString());
         }
-        return res;
+        return res.toString();
     }
 
     public byte[] toBytes(){

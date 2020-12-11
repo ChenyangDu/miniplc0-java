@@ -437,7 +437,7 @@ public final class Analyser {
             newIns(Operation.BR);
             instructions.get(br_false_pos).setX(br_pos - br_false_pos);
             if(check(TokenType.IF_KW)){ // else if
-                analyseIfStmt(level,false); // else if 后面也不一定执行
+                analyseIfStmt(level,canExec); // else if 后面也不一定执行
             }else{
                 analyseBlockStmt(level,canExec); // else
             }
@@ -497,18 +497,24 @@ public final class Analyser {
     }
     private void analyseReturn() throws CompileError{
         expect(TokenType.RETURN_KW);
-        if(peek().getTokenType() == TokenType.SEMICOLON){
-            if(nowFunc.returnSize != 0)
+        if(nowFunc.returnType == ExperType.VOID){
+            if(peek().getValue() != TokenType.SEMICOLON){
                 throw new AnalyzeError(ErrorCode.ReturnError,peek().getStartPos());
-        }else{
-            if(nowFunc.returnSize == 0)
+            }
+        }else {
+            if(peek().getValue() == TokenType.SEMICOLON){
                 throw new AnalyzeError(ErrorCode.ReturnError,peek().getStartPos());
-        }
-        if(nextIf(TokenType.SEMICOLON) == null){
+            }
             newIns(Operation.ARGA,0);
             analyseExpr();
             newIns(Operation.STORE64);
+
+            if(nowFunc.returnType == ExperType.INT && experTypeStack.peek() != ExperType.INT ||
+                    nowFunc.returnType == ExperType.DOUBLE && experTypeStack.peek() != ExperType.DOUBLE ){
+                throw new AnalyzeError(ErrorCode.ReturnError,peek().getStartPos());
+            }
         }
+
         newIns(Operation.RET);
     }
 
@@ -577,11 +583,18 @@ public final class Analyser {
             Token op = next();
             analyseExprMD();
 
+            System.out.println(op.getStartPos());
             ExperType first = experTypeStack.pop();
             ExperType second = experTypeStack.pop();
             if(first != second){
                 System.out.println(experTypeStack);
-                throw new AnalyzeError(ErrorCode.TypeError,peek().getStartPos());
+                throw new AnalyzeError(ErrorCode.TypeError,op.getStartPos());
+            }
+
+            if(first == ExperType.INT){
+                experTypeStack.push(ExperType.INT);
+            }else{
+                experTypeStack.push(ExperType.DOUBLE);
             }
 
             if(op.getTokenType() == TokenType.PLUS) {
@@ -612,6 +625,14 @@ public final class Analyser {
             if(first != second){
                 throw new AnalyzeError(ErrorCode.TypeError,peek().getStartPos());
             }
+
+            if(first == ExperType.INT){
+                experTypeStack.push(ExperType.INT);
+            }else{
+                experTypeStack.push(ExperType.DOUBLE);
+            }
+
+
             if(type == TokenType.MUL){
                 if(first == ExperType.INT)
                     newIns(Operation.MUL_I);

@@ -62,6 +62,10 @@ public class Tokenizer {
             if(peek == 'e' || peek == 'E'){
                 value += it.nextChar();
                 peek = it.peekChar();
+                if(peek == '+' || peek == '-'){
+                    value += it.nextChar();
+                    peek = it.peekChar();
+                }
                 if(!Character.isDigit(peek)){
                     throw new TokenizeError(ErrorCode.ExpectedToken,it.currentPos());
                 }

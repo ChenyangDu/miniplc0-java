@@ -498,9 +498,7 @@ public final class Analyser {
     private void analyseReturn() throws CompileError{
         expect(TokenType.RETURN_KW);
         if(nowFunc.returnType == ExperType.VOID){
-            if(peek().getValue() != TokenType.SEMICOLON){
-                throw new AnalyzeError(ErrorCode.ReturnError,peek().getStartPos());
-            }
+            expect(TokenType.SEMICOLON);
         }else {
             if(peek().getValue() == TokenType.SEMICOLON){
                 throw new AnalyzeError(ErrorCode.ReturnError,peek().getStartPos());

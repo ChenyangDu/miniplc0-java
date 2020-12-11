@@ -281,11 +281,23 @@ public final class Analyser {
         expect(TokenType.R_PAREN);
         expect(TokenType.ARROW);
         Token returnType = expect(TokenType.IDENT);
-        if(tokenToSymbolType(returnType) != SymbolType.VOID_NAME){
-            funEntry.returnSize = 1;
-        }else{
-            funEntry.returnSize = 0;
+        SymbolType symbolType = tokenToSymbolType(returnType);
+        switch (symbolType) {
+            case VOID_NAME -> {
+                funEntry.returnSize = 0;
+                funEntry.returnType = ExperType.VOID;
+            }
+            case DOUBLE_NAME -> {
+                funEntry.returnSize = 1;
+                funEntry.returnType = ExperType.DOUBLE;
+            }
+            case INT_NAME -> {
+                funEntry.returnSize = 1;
+                funEntry.returnType = ExperType.INT;
+            }
+            default -> throw new AnalyzeError(ErrorCode.UnknowError, returnType.getStartPos());
         }
+
         // 如果函数有返回值，需要把所有参数+1
 
         if(funEntry.returnSize == 1){
@@ -697,6 +709,12 @@ public final class Analyser {
         }
         // call
         newIns(Operation.CALL,function.id);
+
+        if(function.returnType == ExperType.INT){
+            experTypeStack.push(ExperType.INT);
+        }else if(function.returnType == ExperType.DOUBLE){
+            experTypeStack.push(ExperType.DOUBLE);
+        }
 
         expect(TokenType.R_PAREN);
     }

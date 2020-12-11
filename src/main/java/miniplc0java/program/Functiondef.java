@@ -1,5 +1,6 @@
 package miniplc0java.program;
 
+import miniplc0java.analyser.ExperType;
 import miniplc0java.analyser.SymbolEntry;
 import miniplc0java.instruction.Instruction;
 import miniplc0java.util.MyByte;
@@ -13,6 +14,7 @@ public class Functiondef {
     public int name_id;
     public List<SymbolEntry> params = new ArrayList<>();
     public int returnSize;
+    public ExperType returnType;
     public int localSize;
     public int bodySize;
     public ArrayList<Instruction> instructions = new ArrayList<>();
